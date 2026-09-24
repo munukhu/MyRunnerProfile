@@ -1,0 +1,1668 @@
+/* ============================================================
+   RUN QUEST 2026 — Pixel Art Retro Arcade Portfolio
+   ============================================================ */
+
+/* ---------- Reset & tokens ---------- */
+*,
+*::before,
+*::after {
+  margin: 0;
+  padding: 0;
+  box-sizing: border-box;
+}
+
+:root {
+  --px: 4px;                     /* base pixel unit */
+  --ink: #0d0d1a;
+  --panel: #1a1a2e;
+  --panel-light: #24243e;
+  --line: #000000;
+  --accent: #ffd23f;
+  --accent-2: #ff4d6d;
+  --good: #38f56b;
+  --info: #4cc9f0;
+  --shadow: rgba(0, 0, 0, 0.55);
+  --font-title: "Press Start 2P", monospace;
+  --font-body: "Silkscreen", monospace;
+}
+
+html,
+body {
+  height: 100%;
+  background: #000;
+  color: #fff;
+  font-family: var(--font-body);
+  overflow: hidden;
+  image-rendering: pixelated;
+  -webkit-font-smoothing: none;
+}
+
+/* Crisp pixel edges on everything */
+img,
+.runner-sprite,
+.landmark,
+.pixel-btn {
+  image-rendering: pixelated;
+  image-rendering: crisp-edges;
+}
+
+/* Reusable pixel border (hard blocky look) */
+.pixel-border {
+  border: var(--px) solid var(--line);
+  box-shadow:
+    0 0 0 var(--px) var(--line),
+    inset calc(var(--px) * -1) calc(var(--px) * -1) 0 rgba(0, 0, 0, 0.35),
+    inset var(--px) var(--px) 0 rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- Pixel buttons ---------- */
+.pixel-btn {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: #fff;
+  background: var(--panel-light);
+  border: var(--px) solid #000;
+  padding: 10px 12px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  box-shadow:
+    inset -3px -3px 0 rgba(0, 0, 0, 0.5),
+    inset 3px 3px 0 rgba(255, 255, 255, 0.2),
+    4px 4px 0 #000;
+  transition: transform 0.05s linear;
+  user-select: none;
+  -webkit-tap-highlight-color: transparent;
+}
+.pixel-btn:hover { background: #33335a; }
+.pixel-btn:active {
+  transform: translate(3px, 3px);
+  box-shadow:
+    inset -3px -3px 0 rgba(0, 0, 0, 0.5),
+    inset 3px 3px 0 rgba(255, 255, 255, 0.2),
+    1px 1px 0 #000;
+}
+
+/* ============================================================
+   BOOT / TITLE SCREEN
+   ============================================================ */
+.boot-screen {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-linear-gradient(0deg, rgba(0,0,0,0.25) 0 2px, transparent 2px 4px),
+    linear-gradient(180deg, #1a1a3a 0%, #3a1a4a 55%, #6a2a3a 100%);
+  text-align: center;
+  transition: opacity 0.4s ease, visibility 0.4s ease;
+}
+.boot-screen.hidden { opacity: 0; visibility: hidden; }
+/* Seamless fade-out into the race timeline */
+.boot-screen.fade { opacity: 0; }
+
+.boot-inner { padding: 20px; }
+/* Profile homepage layout */
+.home-inner {
+  width: min(94vw, 460px);
+  max-height: 96vh;
+  overflow-y: auto;
+  padding: 16px;
+}
+.home-inner .boot-title { font-size: clamp(22px, 6vw, 44px); }
+.home-card {
+  background: var(--panel);
+  margin-top: 18px;
+  padding: 14px;
+}
+.home-card .boot-track { margin: 4px auto 12px; width: 100%; height: 90px; }
+.home-name {
+  font-family: var(--font-title);
+  font-size: clamp(12px, 4vw, 18px);
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+  letter-spacing: 1px;
+}
+.home-tagline {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: var(--accent);
+  margin-top: 6px;
+}
+.pb-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 6px;
+  margin: 14px 0;
+}
+.pb-cell {
+  border: 3px solid #000;
+  background: var(--panel-light);
+  padding: 6px 2px;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.pb-cell .pb-k {
+  font-family: var(--font-title);
+  font-size: 8px;
+  color: var(--info);
+}
+.pb-cell .pb-v {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #6a6a86;
+}
+.pb-cell .pb-v.has { color: var(--good); }
+.home-bio {
+  font-family: var(--font-body);
+  font-size: 14px;
+  color: #c9c9e6;
+  line-height: 1.5;
+  margin: 4px 0 12px;
+}
+.home-links {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  justify-content: center;
+}
+.home-link {
+  font-size: 8px;
+  padding: 8px 10px;
+  background: var(--info);
+  color: #04202a;
+  text-decoration: none;
+}
+.home-link:hover { background: #7ad9f5; }
+.boot-title {
+  font-family: var(--font-title);
+  font-size: clamp(28px, 8vw, 64px);
+  color: var(--accent);
+  text-shadow:
+    4px 4px 0 #000,
+    8px 8px 0 var(--accent-2);
+  letter-spacing: 4px;
+  animation: bob 0.8s steps(2) infinite;
+}
+.boot-sub {
+  font-family: var(--font-title);
+  font-size: clamp(8px, 2.2vw, 12px);
+  color: #fff;
+  margin-top: 18px;
+  text-shadow: 2px 2px 0 #000;
+}
+/* Start-screen track holding the live customized runner sprite */
+.boot-track {
+  position: relative;
+  width: min(80vw, 320px);
+  height: 96px;
+  margin: 26px auto 8px;
+  overflow: hidden;
+  border-bottom: var(--px) solid #000;
+  /* black asphalt track with dashed centre line */
+  background:
+    repeating-linear-gradient(90deg, #fff 0 18px, transparent 18px 44px) center 60px / 100% 4px no-repeat,
+    linear-gradient(180deg, transparent 52px, #14141a 52px);
+}
+.boot-track #boot-runner {
+  position: absolute;
+  left: 50%;
+  bottom: 6px;
+  transform: translateX(-50%);
+  transition: left 0.9s cubic-bezier(0.4, 0, 0.2, 1);
+}
+/* During launch the runner sprints across to the right, then the screen fades */
+.boot-screen.launching #boot-runner { left: 118%; }
+.boot-screen.launching .start-btn,
+.boot-screen.launching .boot-hint { opacity: 0; pointer-events: none; }
+.start-btn {
+  margin-top: 22px;
+  font-size: clamp(10px, 3vw, 16px);
+  background: var(--good);
+  color: #04210f;
+  animation: blink 1s steps(2) infinite;
+}
+.boot-hint {
+  margin-top: 26px;
+  font-size: 10px;
+  color: #c9c9e6;
+  letter-spacing: 1px;
+}
+
+@keyframes blink { 0%,50% { opacity: 1; } 51%,100% { opacity: 0.35; } }
+@keyframes bob { 0% { transform: translateY(0); } 100% { transform: translateY(-6px); } }
+
+/* ============================================================
+   HUD (top bar)
+   ============================================================ */
+.hud {
+  position: fixed;
+  top: 0; left: 0; right: 0;
+  z-index: 40;
+  height: 56px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 0 12px;
+  background: var(--ink);
+  border-bottom: var(--px) solid #000;
+  box-shadow: 0 4px 0 rgba(0,0,0,0.6);
+}
+.hud-left,
+.hud-right { display: flex; align-items: center; gap: 12px; }
+.hud-progress { display: flex; flex-direction: column; line-height: 1.3; }
+.hud-label {
+  font-family: var(--font-title);
+  font-size: 7px;
+  color: var(--accent);
+  letter-spacing: 1px;
+}
+.hud-value {
+  font-family: var(--font-title);
+  font-size: 12px;
+  color: #fff;
+  text-shadow: 2px 2px 0 #000;
+}
+.hud-title {
+  font-family: var(--font-title);
+  font-size: clamp(8px, 2.5vw, 13px);
+  color: var(--info);
+  text-shadow: 2px 2px 0 #000;
+  text-align: center;
+  white-space: nowrap;
+}
+.sound-btn { font-size: 8px; padding: 8px; background: var(--panel); }
+
+/* Retro brand logo + text in the public header (replaces race title/counter) */
+.hud-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  text-decoration: none;
+  min-width: 0;
+}
+.hud-logo {
+  font-size: 18px;
+  line-height: 1;
+  flex: 0 0 auto;
+}
+.hud-brand-text {
+  font-family: var(--font-title);
+  font-size: clamp(8px, 2.4vw, 13px);
+  color: var(--accent);
+  text-shadow: 2px 2px 0 #000, 3px 3px 0 var(--accent-2);
+  letter-spacing: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+/* ============================================================
+   HORIZONTAL RACE TIMELINE (footer)
+   A single connecting line with one date node per race.
+   Lives in the footer strip so it never overlaps the runner.
+   ============================================================ */
+.controls-info { flex-direction: column; gap: 4px; }
+/* Fixed-width viewport: the inner .tl-track slides so the active node stays
+   centered, so any number of races fits without breaking the layout. */
+.stage-dots {
+  position: relative;
+  width: 100%;
+  max-width: 560px;
+  margin: 0 auto;
+  padding: 10px 0 2px;
+  overflow: hidden;
+  -webkit-mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+          mask-image: linear-gradient(90deg, transparent 0, #000 8%, #000 92%, transparent 100%);
+}
+/* the sliding inner track */
+.tl-track {
+  position: relative;
+  display: flex;
+  align-items: flex-start;
+  gap: 0;
+  width: max-content;
+  margin: 0 auto;
+  transition: transform 0.45s cubic-bezier(0.4, 0, 0.2, 1);
+  will-change: transform;
+}
+/* connecting timeline line spans the whole inner track */
+.tl-track::before {
+  content: "";
+  position: absolute;
+  top: 5px; left: 36px; right: 36px;
+  height: 3px;
+  background: repeating-linear-gradient(90deg, #555 0 8px, transparent 8px 12px);
+  z-index: 0;
+}
+.tl-node {
+  position: relative;
+  z-index: 1;
+  flex: 0 0 auto;
+  width: 76px;             /* fixed width — no stretching */
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  background: none;
+  border: none;
+  padding: 0;
+  cursor: pointer;
+}
+.tl-dot {
+  width: 12px; height: 12px;
+  background: #555;
+  border: 3px solid #000;
+  transition: transform 0.1s, background 0.1s;
+}
+.tl-date {
+  font-family: var(--font-body);
+  font-size: 10px;
+  line-height: 1.1;
+  color: #9a9ac0;
+  text-align: center;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 92px;
+}
+/* status colours on the node dot */
+.tl-node.st-finished .tl-dot { background: var(--good); }
+.tl-node.st-upcoming .tl-dot { background: var(--accent-2); }
+.tl-node.st-dnf .tl-dot { background: #ff8c1a; }
+.tl-node.st-dns .tl-dot { background: #6a6a86; }
+/* active node stands out */
+.tl-node.active .tl-dot { transform: scale(1.5); box-shadow: 0 0 0 2px var(--accent); }
+.tl-node.active .tl-date { color: var(--accent); }
+.tl-node:hover .tl-dot { transform: scale(1.3); }
+
+/* On small screens, hide non-active dates to avoid crowding */
+@media (max-width: 560px) {
+  .tl-date { font-size: 8px; max-width: 54px; }
+  .tl-node:not(.active) .tl-date { opacity: 0.55; }
+}
+
+/* ============================================================
+   WORLD & TRACK (horizontal scroll)
+   ============================================================ */
+.world {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+}
+.track {
+  display: flex;
+  height: 100%;
+  width: max-content;
+  transition: transform 0.6s cubic-bezier(0.5, 0, 0.2, 1);
+  will-change: transform;
+}
+
+/* ---------- Individual stage ---------- */
+.stage {
+  position: relative;
+  width: 100vw;
+  height: 100%;
+  overflow: hidden;
+  flex: 0 0 100vw;
+}
+
+/* sky gradient set per-theme via .stage[data-theme] */
+.stage .sky {
+  position: absolute;
+  inset: 0;
+  z-index: 0;
+}
+/* Scanline overlay for CRT vibe */
+.stage .sky::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  background: repeating-linear-gradient(0deg, rgba(0,0,0,0.12) 0 2px, transparent 2px 4px);
+  pointer-events: none;
+}
+
+/* Parallax pixel clouds */
+.clouds {
+  position: absolute;
+  top: 12%;
+  left: 0; right: 0;
+  height: 60px;
+  z-index: 1;
+  opacity: 0.9;
+}
+.cloud {
+  position: absolute;
+  width: 60px; height: 24px;
+  background: #fff;
+  box-shadow:
+    18px -10px 0 0 #fff, 36px 0 0 0 #fff, -18px 4px 0 0 #fff;
+  border-radius: 0;
+  opacity: 0.85;
+  animation: drift 18s linear infinite;
+}
+.cloud.c2 { top: 30px; left: 55%; animation-duration: 26s; opacity: 0.6; }
+.cloud.c3 { top: 8px;  left: 80%; animation-duration: 22s; opacity: 0.7; }
+@keyframes drift {
+  from { transform: translateX(0); }
+  to   { transform: translateX(-40vw); }
+}
+
+/* ============================================================
+   SKY COSMETICS — random pixel-art objects (JS-spawned)
+   Layer sits above the sky/bg, below the clouds & landmark.
+   Each .sky-obj is positioned + animated; JS sets top/left and
+   animation-duration, then removes it when done.
+   ============================================================ */
+.sky-cosmetics {
+  position: absolute;
+  inset: 0;
+  z-index: 1;              /* above sky (0) + bg-image, below clouds/landmark */
+  overflow: hidden;
+  pointer-events: none;
+}
+.sky-obj {
+  position: absolute;
+  left: 0;
+  image-rendering: pixelated;
+  will-change: transform, opacity;
+  --scale: 1;
+}
+
+/* ---- travel paths ---- */
+.sky-obj.dir-rtl  { animation-name: sky-cross-rtl; animation-timing-function: linear; }
+.sky-obj.dir-ltr  { animation-name: sky-cross-ltr; animation-timing-function: linear; }
+.sky-obj.dir-diag { animation-name: sky-meteor;    animation-timing-function: ease-in; }
+.sky-obj.dir-twinkle { animation-name: sky-twinkle; animation-iteration-count: infinite; }
+.sky-obj.dir-static  { animation-name: sky-fade;    animation-timing-function: ease-in-out; }
+
+@keyframes sky-cross-rtl {   /* enters right, exits left */
+  from { transform: translateX(102vw) scale(var(--scale)); }
+  to   { transform: translateX(-140px) scale(var(--scale)); }
+}
+@keyframes sky-cross-ltr {   /* enters left, exits right (mirrored art) */
+  from { transform: translateX(-140px) scaleX(-1) scale(var(--scale)); }
+  to   { transform: translateX(102vw)  scaleX(-1) scale(var(--scale)); }
+}
+@keyframes sky-meteor {      /* falls diagonally down-left, fading out */
+  from { transform: translate(80vw, -30px) rotate(35deg) scale(var(--scale)); opacity: 0; }
+  12%  { opacity: 1; }
+  to   { transform: translate(20vw, 60vh)  rotate(35deg) scale(var(--scale)); opacity: 0; }
+}
+@keyframes sky-twinkle {
+  0%,100% { opacity: 0.15; transform: scale(0.7); }
+  50%     { opacity: 1;    transform: scale(1.1); }
+}
+@keyframes sky-fade {        /* sun/moon gentle appear + linger + fade */
+  0%   { opacity: 0; }
+  15%  { opacity: 0.95; }
+  85%  { opacity: 0.95; }
+  100% { opacity: 0; }
+}
+
+/* ---- BIRD: little pixel "M" that flaps ---- */
+.so-bird { width: 14px; height: 8px; }
+.so-bird .w1, .so-bird .w2 {
+  position: absolute; top: 3px; width: 7px; height: 3px;
+  background: #2b2b3a; transform-origin: right center;
+}
+.so-bird .w1 { left: 0;  animation: bird-flap 0.4s ease-in-out infinite; }
+.so-bird .w2 { left: 7px; transform: scaleX(-1); transform-origin: left center;
+               animation: bird-flap 0.4s ease-in-out infinite; }
+@keyframes bird-flap {
+  0%,100% { transform: rotate(-22deg); }
+  50%     { transform: rotate(18deg); }
+}
+.so-bird .w2 { animation-name: bird-flap-r; }
+@keyframes bird-flap-r {
+  0%,100% { transform: scaleX(-1) rotate(-22deg); }
+  50%     { transform: scaleX(-1) rotate(18deg); }
+}
+
+/* ---- PLANE: fuselage + wing + tail, with a tiny contrail ---- */
+.so-plane { width: 30px; height: 12px; }
+.so-plane .body {
+  position: absolute; top: 4px; left: 0; width: 26px; height: 5px;
+  background: #dfe6ef; border: 1px solid #0c0c18; border-radius: 3px;
+}
+.so-plane .wing {
+  position: absolute; top: 6px; left: 12px; width: 9px; height: 8px;
+  background: #b9c3d1; border: 1px solid #0c0c18; transform: skewX(-24deg);
+}
+.so-plane .tail {
+  position: absolute; top: 0; left: 2px; width: 6px; height: 6px;
+  background: #b9c3d1; border: 1px solid #0c0c18; transform: skewX(-24deg);
+}
+.so-plane::before {   /* contrail */
+  content: ""; position: absolute; top: 6px; left: 26px;
+  width: 24px; height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.75), rgba(255,255,255,0));
+}
+
+/* ---- HOT-AIR BALLOON: envelope + basket ---- */
+.so-balloon { width: 20px; height: 30px; }
+.so-balloon .envelope {
+  position: absolute; top: 0; left: 0; width: 20px; height: 22px;
+  background: var(--accent, #ff4d6d);
+  border: 2px solid #0c0c18; border-radius: 50% 50% 45% 45%;
+  box-shadow: inset -4px 0 0 rgba(0,0,0,0.18);
+}
+.so-balloon .envelope::after {   /* vertical stripe */
+  content: ""; position: absolute; left: 8px; top: 0; width: 4px; height: 100%;
+  background: rgba(255,255,255,0.35);
+}
+.so-balloon .basket {
+  position: absolute; bottom: 0; left: 7px; width: 6px; height: 5px;
+  background: #6b4020; border: 2px solid #0c0c18;
+}
+.so-balloon .basket::before {   /* ropes */
+  content: ""; position: absolute; left: -1px; top: -5px; width: 8px; height: 5px;
+  border-left: 2px solid #0c0c18; border-right: 2px solid #0c0c18;
+}
+
+/* ---- SUN: glowing disc with a soft ray ring ---- */
+.so-sun { width: 30px; height: 30px; }
+.so-sun::before {
+  content: ""; position: absolute; inset: 0;
+  background: #ffdf5e; border-radius: 50%;
+  box-shadow: 0 0 18px 8px rgba(255,215,90,0.55);
+}
+.so-sun .ray {
+  position: absolute; inset: -6px; border-radius: 50%;
+  border: 2px dashed rgba(255,223,94,0.5);
+}
+
+/* ---- MOON: crescent-ish disc with craters ---- */
+.so-moon { width: 26px; height: 26px; }
+.so-moon::before {
+  content: ""; position: absolute; inset: 0;
+  background: #eaeaf2; border-radius: 50%;
+  box-shadow: 0 0 14px 5px rgba(220,225,255,0.4), inset -6px 0 0 rgba(0,0,0,0.14);
+}
+.so-moon .crater {
+  position: absolute; background: rgba(0,0,0,0.12); border-radius: 50%;
+}
+.so-moon .c-a { width: 6px; height: 6px; top: 6px;  left: 7px; }
+.so-moon .c-b { width: 4px; height: 4px; top: 14px; left: 14px; }
+
+/* ---- METEOR / SHOOTING STAR: bright head + fading trail ---- */
+.so-meteor { width: 40px; height: 6px; }
+.so-meteor .rock {
+  position: absolute; right: 0; top: 0; width: 6px; height: 6px;
+  background: #fff; border-radius: 50%;
+  box-shadow: 0 0 8px 3px rgba(180,220,255,0.9);
+}
+.so-meteor .trail {
+  position: absolute; right: 4px; top: 2px; width: 40px; height: 2px;
+  background: linear-gradient(90deg, rgba(150,200,255,0), #cfe6ff);
+  border-radius: 2px;
+}
+
+/* ---- STAR: tiny twinkling pixel ---- */
+.so-star {
+  width: 4px; height: 4px; background: #fff;
+  box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
+}
+
+/* ---- UFO: dome + hull (playful night object) ---- */
+.so-ufo { width: 24px; height: 12px; }
+.so-ufo .hull {
+  position: absolute; bottom: 0; left: 0; width: 24px; height: 7px;
+  background: #7de0c4; border: 2px solid #0c0c18; border-radius: 50%;
+}
+.so-ufo .dome {
+  position: absolute; top: 0; left: 7px; width: 10px; height: 7px;
+  background: #cffff2; border: 2px solid #0c0c18; border-radius: 50% 50% 0 0;
+}
+
+/* Landmark container */
+.landmark-wrap {
+  position: absolute;
+  left: 50%;
+  bottom: 150px;
+  transform: translateX(-50%);
+  z-index: 2;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+
+/* ---------- Ground / running track ---------- */
+/* Default is black street asphalt for every theme. */
+.ground {
+  position: absolute;
+  bottom: 0; left: 0; right: 0;
+  height: 150px;
+  z-index: 3;
+  background: #14141a;
+  border-top: var(--px) solid #000;
+}
+.ground .track-lane {
+  position: absolute;
+  top: 40px; left: 0; right: 0;
+  height: 40px;
+  background: repeating-linear-gradient(
+    90deg,
+    #b23a48 0 40px,
+    #d64550 40px 80px
+  );
+  border-top: 3px solid #000;
+  border-bottom: 3px solid #000;
+}
+.ground .lane-line {
+  position: absolute;
+  top: 58px; left: 0; right: 0;
+  height: 4px;
+  background: repeating-linear-gradient(90deg, #fff 0 24px, transparent 24px 48px);
+}
+
+/* ---------- Score board card ---------- */
+.card {
+  position: absolute;
+  top: 100px;
+  left: 50%;
+  transform: translateX(-50%);
+  z-index: 5;
+  width: min(88vw, 440px);
+  background: var(--panel);
+  border: var(--px) solid #000;
+  box-shadow:
+    inset -4px -4px 0 rgba(0,0,0,0.5),
+    inset 4px 4px 0 rgba(255,255,255,0.12),
+    8px 8px 0 #000;
+  padding: 14px;
+}
+.card-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 8px;
+  border-bottom: 3px dashed #4a4a6a;
+  padding-bottom: 10px;
+  margin-bottom: 10px;
+}
+.card-title {
+  font-family: var(--font-title);
+  font-size: 11px;
+  color: var(--accent);
+  line-height: 1.5;
+  text-shadow: 2px 2px 0 #000;
+}
+.status-badge {
+  font-family: var(--font-title);
+  font-size: 8px;
+  padding: 6px 8px;
+  border: 3px solid #000;
+  white-space: nowrap;
+}
+/* legacy aliases kept for safety */
+.status-badge.completed { background: var(--good); color: #04210f; }
+.status-badge.upcoming  { background: var(--accent-2); color: #fff; }
+/* 4-state race status badges */
+.status-badge.st-finished { background: var(--good);    color: #04210f; }
+.status-badge.st-upcoming { background: var(--accent-2); color: #fff; }
+.status-badge.st-dnf      { background: #ff8c1a;        color: #2a1400; }
+.status-badge.st-dns      { background: #6a6a86;        color: #fff; }
+
+.card-row {
+  display: flex;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 6px 0;
+  font-size: 15px;
+  border-bottom: 2px dotted #33334d;
+}
+.card-row:last-child { border-bottom: none; }
+.row-label { color: var(--info); text-transform: uppercase; letter-spacing: 1px; }
+.row-value { color: #fff; text-align: right; }
+
+.card-note {
+  margin-top: 10px;
+  padding: 8px;
+  background: var(--panel-light);
+  border: 3px solid #000;
+  font-size: 14px;
+  color: var(--accent);
+  line-height: 1.5;
+}
+.card-note::before { content: "★ "; color: var(--accent-2); }
+
+.card-cat {
+  display: inline-block;
+  margin-top: 0;
+  font-family: var(--font-title);
+  font-size: 9px;
+  padding: 6px 8px;
+  background: var(--info);
+  color: #04202a;
+  border: 3px solid #000;
+}
+
+/* Footer row: RACE X/Y on the left, View Cert button beside it */
+.card-foot {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+  margin-top: 8px;
+}
+.cert-btn {
+  font-family: var(--font-title);
+  font-size: 8px;
+  padding: 6px 8px;
+  background: var(--accent);
+  color: #2a1a00;
+  border: 3px solid #000;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+}
+.cert-btn:hover { background: #ffe07a; }
+.cert-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* Gallery button — teal/info tone, same pixel-btn geometry */
+.gallery-btn {
+  font-family: var(--font-title);
+  font-size: 8px;
+  padding: 6px 8px;
+  background: var(--info);
+  color: #04202a;
+  border: 3px solid #000;
+  cursor: pointer;
+  box-shadow: 2px 2px 0 #000;
+  white-space: nowrap;
+  text-decoration: none;
+  display: inline-block;
+  line-height: 1;
+}
+.gallery-btn:hover { background: #7de8ff; }
+.gallery-btn:active { transform: translate(2px, 2px); box-shadow: none; }
+
+/* ============================================================
+   RUNNER SPRITE (pixel character)
+   ============================================================ */
+.runner-layer {
+  position: absolute;
+  bottom: 100px;
+  left: 0; right: 0;
+  z-index: 6;
+  pointer-events: none;
+  height: 0;
+}
+.runner {
+  position: absolute;
+  left: 50%;
+  bottom: 0;
+  transform: translateX(-50%);
+  transition: left 0.15s linear;
+}
+.runner-shadow {
+  position: absolute;
+  bottom: -8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 44px; height: 10px;
+  background: rgba(0,0,0,0.4);
+  border-radius: 50%;
+  filter: blur(1px);
+}
+
+/* ============================================================
+   RUNNER — proportioned pixel human, colours from CSS vars
+   Character colours (set from /api/character):
+     --skin, --hair, --jersey, --shorts
+   ============================================================ */
+:root {
+  --skin: #ffcf8b;
+  --hair: #2b2b3a;
+  --jersey: #4cc9f0;
+  --shorts: #2b3a55;
+  --shoe: #e8e8f0;
+}
+
+/* ------------------------------------------------------------------
+   Redesigned runner — a jointed pixel athlete on a 40x64 canvas.
+   Anatomy (top -> bottom, all measured from the sprite's top-left):
+     head 14w  torso 16w  hips 16w
+   Limbs are two-segment for real joints:
+     ARM  = upper arm (.rp.arm, pivots at shoulder)
+            + forearm (.lower, pivots at elbow) + hand (.hand)
+     LEG  = thigh (.rp.leg, pivots at hip)
+            + calf (.lower, pivots at knee) + foot/shoe (.shoe)
+   Front-side limbs are brighter and on top; back-side limbs are
+   dimmed (filter) and behind the torso, giving cheap depth.
+   ------------------------------------------------------------------ */
+.runner-sprite {
+  position: relative;
+  width: 40px;
+  height: 64px;
+  transform-origin: bottom center;
+}
+.rp {
+  position: absolute;
+  border: 2px solid #0c0c18;   /* dark pixel outline */
+  box-sizing: border-box;
+  image-rendering: pixelated;
+}
+
+/* --- Head, hair, face --- */
+.rp.head { left: 13px; top: 6px;  width: 14px; height: 13px; background: var(--skin);
+           border-radius: 4px 4px 3px 3px; z-index: 3; }
+.rp.hair { left: 11px; top: 1px;  width: 18px; height: 9px;  background: var(--hair);
+           border-bottom: none; border-radius: 5px 5px 0 0; z-index: 4; }
+/* small side-swept fringe so the head reads as facing right (run direction) */
+.rp.hair::after {
+  content: ""; position: absolute; right: -2px; top: 5px;
+  width: 4px; height: 7px; background: var(--hair);
+  border: 2px solid #0c0c18; border-left: none; border-radius: 0 3px 3px 0;
+}
+/* eye dot — placed toward the leading (right) side of the face */
+.rp.face { left: 22px; top: 11px; width: 3px; height: 4px;
+           background: #0c0c18; border: none; z-index: 5; }
+.rp.neck { left: 17px; top: 17px; width: 6px; height: 5px; background: var(--skin);
+           border-top: none; z-index: 2; }
+
+/* --- Torso (jersey), leaning slightly forward into the run --- */
+.rp.torso { left: 12px; top: 20px; width: 16px; height: 19px; background: var(--jersey);
+            border-radius: 4px 4px 2px 2px; z-index: 2;
+            transform-origin: bottom center; transform: rotate(3deg); }
+/* jersey collar accent */
+.rp.torso::before {
+  content: ""; position: absolute; left: 4px; top: -1px;
+  width: 8px; height: 3px; background: rgba(0,0,0,0.18);
+}
+
+/* --- Arms: upper arm -> forearm (elbow) -> hand --- */
+.rp.arm {
+  width: 6px; height: 12px; top: 22px; background: var(--jersey);
+  border-radius: 3px; transform-origin: top center;
+}
+.rp.arm .lower {           /* forearm — skin, bends at the elbow */
+  position: absolute; left: 0; top: 10px;
+  width: 6px; height: 11px; background: var(--skin);
+  border: 2px solid #0c0c18; border-radius: 3px;
+  transform-origin: top center;
+}
+.rp.arm .lower .hand {     /* fist */
+  position: absolute; left: -1px; bottom: -5px;
+  width: 6px; height: 6px; background: var(--skin);
+  border: 2px solid #0c0c18; border-radius: 3px;
+}
+.rp.arm-front { left: 25px; z-index: 6; }
+.rp.arm-back  { left: 9px;  z-index: 1; filter: brightness(0.78); }
+
+/* --- Shorts (hips) --- */
+.rp.shorts { left: 12px; top: 37px; width: 16px; height: 10px; background: var(--shorts);
+             border-radius: 2px 2px 3px 3px; z-index: 2; }
+
+/* --- Legs: thigh -> calf (knee) -> foot/shoe --- */
+.rp.leg {
+  width: 7px; height: 13px; top: 45px; background: var(--skin);
+  border-radius: 3px; transform-origin: top center;
+}
+.rp.leg .lower {           /* calf — pivots at the knee */
+  position: absolute; left: 0; top: 11px;
+  width: 7px; height: 12px; background: var(--skin);
+  border: 2px solid #0c0c18; border-radius: 3px;
+  transform-origin: top center;
+}
+/* Running shoe is a child of the calf so it stays welded to the foot
+   through the whole knee-bend cycle. Toe points right (run direction). */
+.rp.leg .lower .shoe {
+  position: absolute; left: -2px; bottom: -4px;
+  width: 11px; height: 5px; background: var(--shoe);
+  border: 2px solid #0c0c18;
+  border-radius: 2px 4px 4px 2px;   /* rounded toe silhouette */
+}
+.rp.leg .lower .shoe::before {      /* dark sole */
+  content: ""; position: absolute; left: -2px; bottom: -3px;
+  width: 11px; height: 2px; background: #0c0c18;
+}
+.rp.leg-front { left: 19px; z-index: 5; }
+.rp.leg-back  { left: 14px; z-index: 1; filter: brightness(0.8); }
+
+/* ---------- IDLE: gentle breathing bob + relaxed limbs ---------- */
+.runner.idle .runner-sprite { animation: idle-bob 2.4s ease-in-out infinite; }
+@keyframes idle-bob {
+  0%,100% { transform: translateY(0); }
+  50%     { transform: translateY(-1.5px); }
+}
+/* arms hang slightly bent, swaying a touch */
+.runner.idle .rp.arm-front { animation: idle-arm 2.4s ease-in-out infinite; }
+.runner.idle .rp.arm-back  { animation: idle-arm 2.4s ease-in-out infinite reverse; }
+@keyframes idle-arm {
+  0%,100% { transform: rotate(6deg); }
+  50%     { transform: rotate(-2deg); }
+}
+.runner.idle .rp.arm .lower { transform: rotate(-10deg); }  /* elbow bent forward */
+/* legs stand straight, knees barely soft */
+.runner.idle .rp.leg { transform: rotate(0deg); }
+.runner.idle .rp.leg .lower { transform: rotate(4deg); }
+
+/* ---------- RUN: springy body bounce + alternating jointed limbs ----------
+   Runner FACES RIGHT and travels to the RIGHT. Rotation sign convention for a
+   limb pivoting at its top:
+     NEGATIVE rotate = swings toward the RIGHT = FORWARD (into the run)
+     POSITIVE rotate = swings toward the LEFT  = BACKWARD (drive-off / recovery)
+   One full stride = 0.5s. Body bounce peaks twice per stride (0.25s). */
+.runner.run .runner-sprite { animation: run-bounce 0.25s ease-in-out infinite; }
+@keyframes run-bounce {
+  0%,100% { transform: translateY(0)    rotate(-4deg); }  /* forward lean, lowest */
+  50%     { transform: translateY(-4px) rotate(-4deg); }  /* mid-air push, highest */
+}
+
+/* THIGH swing at the hip. Front/back legs are exact opposites (0.5s).
+   Negative = knee driven forward (right); positive = leg extended back. */
+.runner.run .rp.leg-front { animation: thigh-front 0.5s ease-in-out infinite; }
+.runner.run .rp.leg-back  { animation: thigh-back  0.5s ease-in-out infinite; }
+@keyframes thigh-front {
+  0%   { transform: rotate(-34deg); }  /* knee driven high & FORWARD (right) */
+  50%  { transform: rotate(30deg); }   /* extended BACK (left) at toe-off */
+  100% { transform: rotate(-34deg); }
+}
+@keyframes thigh-back {
+  0%   { transform: rotate(30deg); }
+  50%  { transform: rotate(-34deg); }
+  100% { transform: rotate(30deg); }
+}
+
+/* KNEE bend of the calf. For a right-facing runner the calf tucks BEHIND the
+   thigh (toward the left) = POSITIVE rotation. It folds most on recovery (when
+   the thigh is driven back) and straightens to plant the foot forward. */
+.runner.run .rp.leg-front .lower { animation: calf-front 0.5s ease-in-out infinite; }
+.runner.run .rp.leg-back  .lower { animation: calf-back  0.5s ease-in-out infinite; }
+@keyframes calf-front {
+  0%   { transform: rotate(8deg); }    /* thigh forward -> nearly straight, foot reaches */
+  50%  { transform: rotate(52deg); }   /* thigh back -> heel tucks up behind */
+  100% { transform: rotate(8deg); }
+}
+@keyframes calf-back {
+  0%   { transform: rotate(52deg); }   /* thigh back -> tucked up behind */
+  50%  { transform: rotate(8deg); }    /* thigh forward -> extends to plant */
+  100% { transform: rotate(52deg); }
+}
+
+/* ARMS: upper arm swings from the shoulder, forearm holds a runner's elbow
+   bend and pumps. Arms swing CONTRALATERALLY — the front arm counters the
+   front leg: front leg FORWARD (-34) -> front arm BACK (+30).
+   Negative = arm forward (right); positive = arm back (left). */
+.runner.run .rp.arm-front { animation: arm-front 0.5s ease-in-out infinite; }
+.runner.run .rp.arm-back  { animation: arm-back  0.5s ease-in-out infinite; }
+@keyframes arm-front {
+  0%   { transform: rotate(30deg); }    /* driven BACK (front leg is forward) */
+  50%  { transform: rotate(-38deg); }   /* driven FORWARD (front leg is back) */
+  100% { transform: rotate(30deg); }
+}
+@keyframes arm-back {
+  0%   { transform: rotate(-38deg); }   /* driven FORWARD (back leg is back) */
+  50%  { transform: rotate(30deg); }
+  100% { transform: rotate(-38deg); }
+}
+.runner.run .rp.arm-front .lower { animation: fore-front 0.5s ease-in-out infinite; }
+.runner.run .rp.arm-back  .lower { animation: fore-back  0.5s ease-in-out infinite; }
+/* Forearm bends FORWARD (across the front, toward the right) = NEGATIVE.
+   Elbow tucks tighter when the arm is back, opens as it swings forward. */
+@keyframes fore-front {
+  0%   { transform: rotate(-95deg); }   /* arm back -> elbow tucked in */
+  50%  { transform: rotate(-70deg); }   /* arm forward -> elbow opens */
+  100% { transform: rotate(-95deg); }
+}
+@keyframes fore-back {
+  0%   { transform: rotate(-70deg); }   /* arm forward -> elbow opens */
+  50%  { transform: rotate(-95deg); }   /* arm back -> elbow tucked in */
+  100% { transform: rotate(-70deg); }
+}
+
+/* Dust puffs while running */
+.dust {
+  position: absolute;
+  bottom: 0; left: -14px;
+  width: 10px; height: 10px;
+  background: rgba(255,255,255,0.6);
+  opacity: 0;
+}
+.runner.run .dust { animation: dust-puff 0.35s steps(3) infinite; }
+@keyframes dust-puff {
+  0%   { opacity: 0.7; transform: translate(0,0) scale(1); }
+  100% { opacity: 0;   transform: translate(-20px,-8px) scale(0.2); }
+}
+
+/* ============================================================
+   THEMES — per stage backgrounds
+   ============================================================ */
+
+/* 1. Digiland Run — GBK / Senayan (night stadium, Jakarta) */
+.stage[data-theme="gbk"] .sky {
+  background: linear-gradient(180deg, #0b1e3a 0%, #16304f 50%, #24476b 100%);
+}
+
+/* 2. Jakim HM — Monas / Jakarta */
+.stage[data-theme="monas"] .sky {
+  background: linear-gradient(180deg, #fdb44b 0%, #f77f6b 45%, #7a4ca0 100%);
+}
+
+/* 3. Smartfren — modern city magenta */
+.stage[data-theme="smartfren"] .sky {
+  background: linear-gradient(180deg, #2a0a3a 0%, #7a1a6a 50%, #d81b8c 100%);
+}
+
+/* 4. Tangerang 10K — city park / Cisadane */
+.stage[data-theme="tangerang"] .sky {
+  background: linear-gradient(180deg, #56ccf2 0%, #8fd3a0 60%, #b8e994 100%);
+}
+
+/* 5. Pocari Bandung — Gedung Sate, cool green */
+.stage[data-theme="bandung"] .sky {
+  background: linear-gradient(180deg, #a8e063 0%, #56ab2f 55%, #245414 100%);
+}
+
+/* 6. JRF — festive major marathon */
+.stage[data-theme="jrf"] .sky {
+  background: linear-gradient(180deg, #1a1a40 0%, #4b2c78 45%, #ff6b6b 100%);
+}
+
+/* Track is black asphalt on every built-in theme now (tints removed). */
+
+/* ============================================================
+   LANDMARKS (CSS pixel art)
+   ============================================================ */
+.landmark { position: relative; }
+
+/* --- GBK Stadium: oval bowl with floodlights --- */
+.lm-gbk {
+  width: 260px; height: 120px;
+}
+.lm-gbk .bowl {
+  position: absolute; bottom: 0; left: 0;
+  width: 260px; height: 90px;
+  background: #d9dde3;
+  border: 4px solid #000;
+  border-radius: 50% 50% 12px 12px / 70% 70% 12px 12px;
+  box-shadow: inset 0 -18px 0 #a9b0bb;
+}
+.lm-gbk .ring {
+  position: absolute; top: 22px; left: 30px;
+  width: 200px; height: 44px;
+  background: #6ee7ff;
+  border: 4px solid #000;
+  border-radius: 50%;
+  box-shadow: 0 0 18px 4px rgba(110,231,255,0.6);
+}
+.lm-gbk .light {
+  position: absolute; bottom: 30px;
+  width: 8px; height: 70px;
+  background: #555; border: 3px solid #000;
+}
+.lm-gbk .light::after {
+  content: ""; position: absolute; top: -14px; left: -10px;
+  width: 26px; height: 14px; background: #fff36b;
+  border: 3px solid #000; box-shadow: 0 0 16px 6px rgba(255,243,107,0.8);
+}
+.lm-gbk .light.l1 { left: 8px; }
+.lm-gbk .light.l2 { right: 8px; }
+
+/* --- MONAS: obelisk with gold flame --- */
+.lm-monas { width: 120px; height: 240px; }
+.lm-monas .flame {
+  position: absolute; top: 0; left: 50%; transform: translateX(-50%);
+  width: 22px; height: 26px; background: var(--accent);
+  border: 3px solid #000;
+  box-shadow: 0 0 18px 6px rgba(255,210,63,0.9);
+  clip-path: polygon(50% 0, 100% 60%, 75% 100%, 25% 100%, 0 60%);
+}
+.lm-monas .shaft {
+  position: absolute; bottom: 30px; left: 50%; transform: translateX(-50%);
+  width: 18px; height: 190px; background: #eef1f5; border: 3px solid #000;
+}
+.lm-monas .base {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 90px; height: 34px; background: #cfd4db; border: 4px solid #000;
+}
+
+/* --- SMARTFREN: modern skyscrapers, magenta glow --- */
+.lm-smartfren { width: 280px; height: 200px; display: flex; align-items: flex-end; gap: 6px; }
+.lm-smartfren .bldg {
+  width: 48px; background: #3a1140; border: 3px solid #000;
+  box-shadow: 0 0 14px 2px rgba(216,27,140,0.5);
+  background-image:
+    linear-gradient(90deg, transparent 6px, #ff4dc4 6px 12px, transparent 12px 20px),
+    repeating-linear-gradient(0deg, #ff4dc4 0 4px, transparent 4px 16px);
+  background-size: 24px 100%, 100% 20px;
+  background-blend-mode: screen;
+}
+.lm-smartfren .b1 { height: 120px; }
+.lm-smartfren .b2 { height: 190px; }
+.lm-smartfren .b3 { height: 150px; }
+.lm-smartfren .b4 { height: 100px; }
+
+/* --- TANGERANG: park + river + arch --- */
+.lm-tangerang { width: 260px; height: 150px; }
+.lm-tangerang .arch {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 140px; height: 90px;
+  border: 6px solid #d64550; border-bottom: none;
+  border-radius: 80px 80px 0 0; background: transparent;
+}
+.lm-tangerang .tree {
+  position: absolute; bottom: 0; width: 30px; height: 60px;
+}
+.lm-tangerang .tree::before {
+  content: ""; position: absolute; bottom: 0; left: 11px;
+  width: 8px; height: 24px; background: #6b4020; border: 3px solid #000;
+}
+.lm-tangerang .tree::after {
+  content: ""; position: absolute; bottom: 20px; left: -2px;
+  width: 34px; height: 34px; background: #2e8b3d; border: 3px solid #000;
+  border-radius: 40% 40% 30% 30%;
+}
+.lm-tangerang .t1 { left: 6px; }
+.lm-tangerang .t2 { right: 6px; }
+
+/* --- BANDUNG: Gedung Sate skewer landmark --- */
+.lm-bandung { width: 240px; height: 160px; }
+.lm-bandung .body {
+  position: absolute; bottom: 0; left: 50%; transform: translateX(-50%);
+  width: 200px; height: 80px; background: #f3ede0; border: 4px solid #000;
+  box-shadow: inset 0 -10px 0 #d8cfba;
+}
+.lm-bandung .tower {
+  position: absolute; bottom: 76px; left: 50%; transform: translateX(-50%);
+  width: 30px; height: 46px; background: #e9e1cf; border: 4px solid #000;
+}
+.lm-bandung .skewer {
+  position: absolute; bottom: 118px; left: 50%; transform: translateX(-50%);
+  width: 6px; height: 40px; background: #6b6b6b; border: 2px solid #000;
+}
+/* the 6 "sate" balls */
+.lm-bandung .skewer::before {
+  content: ""; position: absolute; left: -6px; top: -4px;
+  width: 16px; height: 16px; background: var(--accent); border: 3px solid #000;
+  border-radius: 50%;
+  box-shadow: 0 12px 0 0 var(--accent), 0 -0px 0 0 transparent;
+}
+.lm-bandung .win {
+  position: absolute; bottom: 20px; left: 20px; right: 20px; height: 20px;
+  background: repeating-linear-gradient(90deg, #4cc9f0 0 12px, transparent 12px 24px);
+}
+
+/* --- JRF: finish gate + flags --- */
+.lm-jrf { width: 300px; height: 180px; }
+.lm-jrf .post {
+  position: absolute; bottom: 0; width: 20px; height: 150px;
+  background: #b23a48; border: 4px solid #000;
+}
+.lm-jrf .post.p1 { left: 20px; }
+.lm-jrf .post.p2 { right: 20px; }
+.lm-jrf .banner {
+  position: absolute; top: 0; left: 20px; right: 20px; height: 40px;
+  background: #111; border: 4px solid #000;
+  display: flex; align-items: center; justify-content: center;
+  font-family: var(--font-title); font-size: 12px; color: var(--accent);
+}
+.lm-jrf .checker {
+  position: absolute; top: 44px; left: 20px; right: 20px; height: 18px;
+  background:
+    repeating-conic-gradient(#fff 0 25%, #000 0 50%) 0 0 / 18px 18px;
+  border: 3px solid #000;
+}
+.lm-jrf .flag {
+  position: absolute; top: -18px; width: 0; height: 0;
+  border-left: 16px solid var(--accent-2);
+  border-top: 10px solid transparent;
+  border-bottom: 10px solid transparent;
+  animation: wave 0.6s steps(2) infinite;
+}
+.lm-jrf .flag.f1 { left: 60px; }
+.lm-jrf .flag.f2 { right: 60px; border-left-color: var(--good); }
+@keyframes wave { 0% { transform: skewY(0); } 100% { transform: skewY(-8deg); } }
+
+/* ============================================================
+   COMPLETED overlay stamp
+   ============================================================ */
+/* (Stage Clear stamp removed by design) */
+
+/* ============================================================
+   BOTTOM CONTROLS
+   ============================================================ */
+.controls {
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  z-index: 40;
+  min-height: 72px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 8px 12px;
+  background: var(--ink);
+  border-top: var(--px) solid #000;
+  box-shadow: 0 -4px 0 rgba(0,0,0,0.6);
+}
+.arrow-btn {
+  display: flex; align-items: center; gap: 8px;
+  font-size: 11px;
+  background: var(--accent);
+  color: #2a1a00;
+}
+.arrow-btn:hover { background: #ffe07a; }
+.arrow-btn .arrow { font-size: 14px; }
+.arrow-btn:disabled { opacity: 0.4; cursor: not-allowed; }
+.controls-info { flex: 1; display: flex; justify-content: center; }
+.controls-info .status-badge { font-size: 9px; }
+
+/* ============================================================
+   RESPONSIVE
+   ============================================================ */
+@media (max-width: 560px) {
+  .hud-title { display: none; }
+  .hud-progress { display: none; }   /* free up room for the brand on small screens */
+  .hud-brand-text { font-size: 9px; }
+  .card { top: 92px; padding: 10px; }
+  .card-title { font-size: 9px; }
+  .card-row { font-size: 13px; }
+  .arrow-btn .arrow-label { display: none; }
+  .arrow-btn { font-size: 14px; padding: 12px 16px; flex: 0 0 auto; }
+  .landmark-wrap { bottom: 140px; transform: translateX(-50%) scale(0.8); }
+  .runner-layer { bottom: 74px; }
+
+  /* Mobile timeline: cap to ~4 visible nodes, let the flex column shrink so the
+     Left/Right arrows are never pushed off-screen. The inner track auto-scrolls. */
+  .controls { gap: 6px; padding: 8px 6px; }
+  .controls-info { min-width: 0; flex: 1 1 auto; }
+  .tl-node { width: 58px; }
+  .stage-dots {
+    max-width: calc(58px * 4);   /* at most 4 nodes visible at once */
+    margin: 0 auto;
+  }
+  .tl-date { font-size: 7px; max-width: 50px; }
+}
+@media (max-height: 620px) {
+  .card { top: 78px; }
+}
+
+/* generic hide helper */
+.hidden { display: none !important; }
+
+/* Reduced motion */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.001ms !important; animation-iteration-count: 1 !important; }
+  .track { transition: none; }
+}
+
+/* ============================================================
+   v2 ADDITIONS — finish time row, admin link, loading/empty
+   ============================================================ */
+.card-row.finish .row-label { color: var(--good); }
+.card-row.finish .row-value { color: var(--good); font-weight: bold; }
+
+.admin-link {
+  font-family: var(--font-title);
+  font-size: 7px;
+  color: #04210f;
+  background: var(--good);
+  border: 3px solid #000;
+  padding: 6px 8px;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.admin-link:hover { background: #6dffa0; }
+
+/* Loading / empty overlays */
+.overlay-msg {
+  position: fixed;
+  inset: 0;
+  z-index: 30;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  background: linear-gradient(180deg, #1a1a3a, #3a1a4a);
+  font-family: var(--font-title);
+  color: var(--accent);
+  font-size: 12px;
+  text-align: center;
+  padding: 24px;
+}
+.overlay-msg.hidden { display: none; }
+.overlay-msg .blink { animation: blink 1s steps(2) infinite; }
+.overlay-msg a { color: var(--good); }
+
+/* ============================================================
+   CUSTOM THEMES (authored in the Theme Creator)
+   Sky / ground / lane colors are applied inline by script.js.
+   These rules cover shared structure + image assets + atmosphere.
+   ============================================================ */
+
+/* Background image layer sits above .sky, below clouds/landmark */
+.stage .bg-image {
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-size: cover;
+  background-position: center bottom;
+  background-repeat: no-repeat;
+  image-rendering: pixelated;
+}
+
+/* Landmark rendered from an uploaded/linked image */
+.landmark-img {
+  max-height: 200px;
+  max-width: 300px;
+  image-rendering: pixelated;
+  filter: drop-shadow(4px 4px 0 rgba(0, 0, 0, 0.5));
+}
+
+/* Colored placeholder landmark when no image is provided */
+.landmark-fallback {
+  width: 90px;
+  height: 150px;
+  border: var(--px) solid #000;
+  box-shadow:
+    inset -6px -6px 0 rgba(0, 0, 0, 0.35),
+    inset 6px 6px 0 rgba(255, 255, 255, 0.18);
+}
+
+/* ---------- Atmosphere effects ---------- */
+.stage.atm-sunset .sky { filter: saturate(1.25) hue-rotate(-10deg) brightness(1.05); }
+.stage.atm-night-neon .sky { filter: brightness(0.55) saturate(1.6); }
+.stage.atm-night-neon .landmark-fallback {
+  box-shadow:
+    0 0 20px 6px currentColor,
+    inset -6px -6px 0 rgba(0, 0, 0, 0.35);
+}
+.stage.atm-night-neon .landmark-img { filter: drop-shadow(0 0 12px currentColor); }
+
+/* FX overlay layer (rain / confetti) */
+.stage .atm-fx {
+  position: absolute;
+  inset: 0;
+  z-index: 4;
+  pointer-events: none;
+}
+.stage.atm-rain .atm-fx {
+  background: repeating-linear-gradient(
+    112deg,
+    rgba(180, 200, 255, 0.5) 0 2px,
+    transparent 2px 10px
+  );
+  animation: rain-fall 0.5s linear infinite;
+}
+@keyframes rain-fall {
+  from { background-position: 0 0; }
+  to   { background-position: -60px 120px; }
+}
+.stage.atm-confetti .atm-fx {
+  background-image:
+    radial-gradient(circle, #ff4d6d 3px, transparent 4px),
+    radial-gradient(circle, #38f56b 3px, transparent 4px),
+    radial-gradient(circle, #4cc9f0 3px, transparent 4px),
+    radial-gradient(circle, #ffd23f 3px, transparent 4px);
+  background-size: 70px 70px, 90px 90px, 110px 110px, 80px 80px;
+  background-position: 0 0, 30px 15px, 15px 40px, 50px 25px;
+  animation: confetti-fall 0.9s linear infinite;
+}
+@keyframes confetti-fall {
+  from { background-position: 0 0, 30px 15px, 15px 40px, 50px 25px; }
+  to   { background-position: 0 70px, 30px 85px, 15px 110px, 50px 95px; }
+}
+
+/* ============================================================
+   v3 — Settings modal, race-info position, Personal Best badge
+   ============================================================ */
+
+/* ---------- Certificate preview modal ---------- */
+.cert-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 95;
+  background: rgba(0, 0, 0, 0.82);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.cert-overlay.show { display: flex; }
+.cert-modal {
+  background: var(--panel);
+  width: min(94vw, 720px);
+  max-height: 92vh;
+  display: flex;
+  flex-direction: column;
+  padding: 12px;
+}
+.cert-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 10px;
+}
+.cert-title {
+  font-family: var(--font-title);
+  font-size: 11px;
+  color: var(--accent);
+  text-shadow: 2px 2px 0 #000;
+}
+.cert-head .pixel-btn { font-size: 9px; padding: 6px 10px; }
+.cert-body {
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background:
+    repeating-conic-gradient(#1a1a2e 0 25%, #14141f 0 50%) 0 0 / 20px 20px;
+  border: 3px solid #000;
+}
+.cert-body img {
+  max-width: 100%;
+  max-height: 76vh;
+  image-rendering: auto;
+  display: block;
+}
+
+/* ---------- Settings modal ---------- */
+.settings-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 90;
+  background: rgba(0, 0, 0, 0.7);
+  display: none;
+  align-items: center;
+  justify-content: center;
+  padding: 16px;
+}
+.settings-overlay.show { display: flex; }
+.settings-panel {
+  background: var(--panel);
+  width: min(92vw, 380px);
+  padding: 18px;
+}
+.settings-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  border-bottom: 3px dashed #4a4a6a;
+  padding-bottom: 12px;
+  margin-bottom: 14px;
+}
+.settings-head h2 {
+  font-family: var(--font-title);
+  font-size: 14px;
+  color: var(--accent);
+  text-shadow: 2px 2px 0 #000;
+}
+.settings-head .pixel-btn { font-size: 9px; padding: 6px 10px; }
+
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: 12px;
+}
+.setting-label {
+  font-family: var(--font-title);
+  font-size: 10px;
+  color: var(--info);
+}
+.setting-desc {
+  font-size: 13px;
+  color: #8a8ab0;
+  margin-top: 4px;
+}
+.toggle-btn { font-size: 9px; min-width: 56px; background: var(--panel-light); }
+.toggle-btn[data-on="true"] { background: var(--good); color: #04210f; }
+
+/* segmented control */
+.seg { display: flex; gap: 4px; }
+.seg-btn { font-size: 8px; padding: 8px; background: var(--panel-light); }
+.seg-btn.active { background: var(--accent); color: #2a1a00; }
+
+/* Gear + lock icon buttons in the HUD */
+.icon-btn {
+  font-size: 14px;
+  line-height: 1;
+  padding: 8px 10px;
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--panel);
+}
+.icon-btn:hover { background: #33335a; }
+.admin-lock { color: var(--accent); }
+#settings-btn { font-size: 14px; line-height: 1; padding: 8px 10px; }
+
+/* ---------- Race info card position ---------- */
+/* Default (middle) is the existing `top: 100px`. These override per body class. */
+body.info-top .card    { top: 92px; }
+body.info-middle .card { top: 50%; transform: translate(-50%, -50%); }
+body.info-bottom .card { top: auto; bottom: 172px; }
+@media (max-width: 560px) {
+  body.info-top .card    { top: 84px; }
+  body.info-bottom .card { bottom: 168px; }
+}
+
+/* ---------- PERSONAL BEST badge — fancy tilted SVG star ----------
+   Wrapper only handles position + tilt. The glow is on the SVG
+   itself via filter: drop-shadow(), so it traces the star silhouette
+   exactly — not a circular box halo.
+   ---------------------------------------------------------------- */
+.pb-badge {
+  position: absolute;
+  bottom: -20px;
+  right: -16px;
+  z-index: 8;
+  width: 68px;
+  height: 68px;
+
+  /* rotate the whole badge */
+  transform: rotate(15deg);
+  transform-origin: center;
+
+  pointer-events: none;
+}
+
+/* The SVG fills the wrapper. overflow:visible lets the glow
+   and sparkle dots bleed outside the 68×68 box freely. */
+.pb-star-svg {
+  width: 100%;
+  height: 100%;
+  overflow: visible;
+  /* silhouette-based glow — follows every point of the star */
+  animation: pb-glow 2s ease-in-out infinite;
+}
+
+/* ---- star layers ---- */
+
+/* thick dark pixel border — rendered first (bottom), slightly larger */
+.pb-star-shadow {
+  fill: none;
+  stroke: #3a1e00;
+  stroke-width: 10;
+  stroke-linejoin: round;
+}
+
+/* main gold gradient fill */
+.pb-star-fill {
+  fill: url(#pb-grad);
+  stroke: #b8860b;
+  stroke-width: 4.5;
+  stroke-linejoin: round;
+}
+
+/* top-half sheen for that trophy-gold depth */
+.pb-star-shine {
+  fill: rgba(255,255,255,0.22);
+  stroke: none;
+  clip-path: inset(0 0 52% 0);   /* show only the upper half */
+}
+
+/* sparkle dots at star tips */
+.pb-sparkle {
+  fill: #fff8c0;
+  opacity: 0;
+  animation: pb-sparkle-blink 2s ease-in-out infinite;
+}
+.pb-sparkle:nth-child(1) { animation-delay: 0s;    r: 3.5; }
+.pb-sparkle:nth-child(2) { animation-delay: 0.4s; }
+.pb-sparkle:nth-child(3) { animation-delay: 0.8s; }
+.pb-sparkle:nth-child(4) { animation-delay: 1.2s; }
+.pb-sparkle:nth-child(5) { animation-delay: 1.6s; }
+
+/* "PB" text centred in the star belly */
+.pb-star-text {
+  font-family: var(--font-title, "Press Start 2P", monospace);
+  font-size: 22px;
+  font-weight: bold;
+  fill: #2a1000;
+  stroke: rgba(255,255,255,0.35);
+  stroke-width: 2;
+  paint-order: stroke fill;
+  text-anchor: middle;
+  dominant-baseline: middle;
+  letter-spacing: 1px;
+  /* counter-rotate the text so it reads straight even though the
+     badge is tilted 15° — the SVG star is tilted, text stays upright */
+  transform: rotate(-15deg);
+  transform-origin: 50px 55px;   /* matches the x/y of the <text> element */
+}
+
+/* ---- SVG gradient (defined inline in CSS via the SVG defs trick) ----
+   We inject the <defs> into the SVG in script.js markup above.
+   Fallback: the fill on .pb-star-fill also accepts a flat color.        */
+
+/* ---- Silhouette glow pulse on the SVG (drop-shadow follows star shape) ---- */
+@keyframes pb-glow {
+  0%, 100% {
+    filter:
+      drop-shadow(0 0  3px #ffd23f)
+      drop-shadow(0 0  7px rgba(255,180,  0, 0.70))
+      drop-shadow(0 0 13px rgba(255,210, 50, 0.35));
+  }
+  50% {
+    filter:
+      drop-shadow(0 0  6px #fff700)
+      drop-shadow(0 0 14px rgba(255,220,  0, 0.95))
+      drop-shadow(0 0 28px rgba(255,200, 40, 0.55));
+  }
+}
+
+/* ---- Sparkle blink ---- */
+@keyframes pb-sparkle-blink {
+  0%,100% { opacity: 0;   transform: scale(0.6); }
+  40%,60% { opacity: 0.95; transform: scale(1.3); }
+}
+
+/* Race name is always shown in uppercase */
+.card-title { text-transform: uppercase; }
+
+/* On short screens, scale down */
+@media (max-height: 620px) {
+  .pb-badge { width: 54px; height: 54px; bottom: -14px; right: -10px; }
+}

@@ -1,0 +1,38 @@
+[
+  {
+    "id": "jembatan-kaca",
+    "name": "JEMBATAN KACA",
+    "primaryColor": "#fec35d",
+    "secondaryColor": "#14141a",
+    "skyTop": "#5656e1",
+    "skyBottom": "#fea034",
+    "trackStyle": "asphalt",
+    "atmosphere": "daytime",
+    "backgroundImage": "",
+    "landmarkImage": "/uploads/1790156369853-b34f49f5.png"
+  },
+  {
+    "id": "pancoran",
+    "name": "Pancoran",
+    "primaryColor": "#f35e5e",
+    "secondaryColor": "#14141a",
+    "skyTop": "#9f2d19",
+    "skyBottom": "#9d7b7b",
+    "trackStyle": "asphalt",
+    "atmosphere": "sunset",
+    "backgroundImage": "",
+    "landmarkImage": "/uploads/1790158775595-7a321625.png"
+  },
+  {
+    "id": "monas",
+    "name": "MONAS",
+    "primaryColor": "#4268ff",
+    "secondaryColor": "#14141a",
+    "skyTop": "#2e35ff",
+    "skyBottom": "#ff2929",
+    "trackStyle": "asphalt",
+    "atmosphere": "sunset",
+    "backgroundImage": "",
+    "landmarkImage": "/uploads/1790159598413-a1e8eb2b.png"
+  }
+]

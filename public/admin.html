@@ -1,0 +1,717 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MY RUNNER PROFILE — CMS Admin</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+  <link href="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.css" rel="stylesheet" />
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/cropperjs/1.6.2/cropper.min.js"></script>
+  <style>
+    :root{
+      --px:4px; --ink:#0d0d1a; --panel:#1a1a2e; --panel-light:#24243e;
+      --accent:#ffd23f; --accent-2:#ff4d6d; --good:#38f56b; --info:#4cc9f0;
+      --font-title:"Press Start 2P",monospace; --font-body:"Silkscreen",monospace;
+    }
+    *{margin:0;padding:0;box-sizing:border-box}
+    body{
+      font-family:var(--font-body); color:#fff; min-height:100vh;
+      background:
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.15) 0 2px, transparent 2px 4px),
+        linear-gradient(160deg,#1a1a3a 0%,#3a1a4a 60%,#5a2340 100%);
+      padding:16px; font-size:16px;
+    }
+    .wrap{max-width:920px;margin:0 auto}
+    h1{font-family:var(--font-title);font-size:20px;color:var(--accent);
+       text-shadow:3px 3px 0 #000,6px 6px 0 var(--accent-2);letter-spacing:2px}
+    .sub{font-size:14px;color:#c9c9e6;margin:10px 0 20px}
+    .sub a{color:var(--good)}
+    .topbar{display:flex;justify-content:space-between;align-items:flex-end;flex-wrap:wrap;gap:10px}
+
+    .pixel-btn{
+      font-family:var(--font-title);font-size:10px;color:#fff;
+      background:var(--panel-light);border:var(--px) solid #000;padding:10px 12px;
+      cursor:pointer;letter-spacing:1px;text-transform:uppercase;
+      box-shadow:inset -3px -3px 0 rgba(0,0,0,.5),inset 3px 3px 0 rgba(255,255,255,.2),4px 4px 0 #000;
+    }
+    .pixel-btn:active{transform:translate(3px,3px);box-shadow:inset -3px -3px 0 rgba(0,0,0,.5),1px 1px 0 #000}
+    .pixel-btn.good{background:var(--good);color:#04210f}
+    .pixel-btn.warn{background:var(--accent-2)}
+    .pixel-btn.ghost{background:var(--panel);font-size:8px;padding:6px 8px}
+    .pixel-btn:disabled{opacity:.4;cursor:not-allowed}
+
+    .panel{background:var(--panel);border:var(--px) solid #000;padding:16px;margin-bottom:18px;
+      box-shadow:inset -4px -4px 0 rgba(0,0,0,.5),inset 4px 4px 0 rgba(255,255,255,.1),6px 6px 0 #000}
+    .panel h2{font-family:var(--font-title);font-size:12px;color:var(--info);margin-bottom:14px}
+
+    label{display:block;font-family:var(--font-title);font-size:8px;color:var(--accent);
+      margin:12px 0 6px;letter-spacing:1px}
+    input,select,textarea{
+      width:100%;font-family:var(--font-body);font-size:16px;color:#fff;
+      background:var(--panel-light);border:3px solid #000;padding:9px;outline:none
+    }
+    input:focus,select:focus,textarea:focus{border-color:var(--accent)}
+    textarea{resize:vertical;min-height:56px}
+    .grid{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+    @media(max-width:620px){.grid{grid-template-columns:1fr}}
+    .form-actions{display:flex;gap:10px;margin-top:18px;flex-wrap:wrap}
+    .err{color:var(--accent-2);font-size:13px;margin-top:10px;min-height:16px}
+
+    /* Race list */
+    .race-list{display:flex;flex-direction:column;gap:10px}
+    .race-item{
+      display:flex;align-items:center;gap:12px;
+      background:var(--panel-light);border:3px solid #000;padding:10px
+    }
+    .race-item .swatch{width:34px;height:34px;border:3px solid #000;flex:0 0 auto}
+    .race-item .info{flex:1;min-width:0}
+    .race-item .rname{font-size:15px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .race-item .rmeta{font-size:12px;color:#9a9ac0;margin-top:3px}
+    .race-item .tag{
+      font-family:var(--font-title);font-size:7px;padding:4px 6px;border:2px solid #000;margin-right:6px
+    }
+    .tag.completed{background:var(--good);color:#04210f}
+    .tag.upcoming{background:var(--accent-2)}
+    .race-item .ops{display:flex;gap:6px;flex:0 0 auto;flex-wrap:wrap;justify-content:flex-end}
+    .order-badge{font-family:var(--font-title);font-size:9px;color:var(--accent);width:22px;text-align:center;flex:0 0 auto}
+
+    .swatch.gbk{background:#24476b}.swatch.monas{background:#f77f6b}
+    .swatch.smartfren{background:#d81b8c}.swatch.tangerang{background:#8fd3a0}
+    .swatch.bandung{background:#56ab2f}.swatch.jrf{background:#4b2c78}
+
+    .toast{
+      position:fixed;bottom:16px;left:50%;transform:translateX(-50%);
+      background:var(--good);color:#04210f;font-family:var(--font-title);font-size:9px;
+      padding:12px 16px;border:3px solid #000;box-shadow:4px 4px 0 #000;
+      opacity:0;pointer-events:none;transition:opacity .2s;z-index:50
+    }
+    .toast.show{opacity:1}
+    .toast.err{background:var(--accent-2);color:#fff}
+    .empty{font-size:14px;color:#9a9ac0;padding:12px 0}
+
+    /* ---- Tabs ---- */
+    .tabs{display:flex;gap:8px;margin:18px 0}
+    .tab{font-family:var(--font-title);font-size:10px;color:#fff;background:var(--panel);
+      border:3px solid #000;padding:10px 14px;cursor:pointer;letter-spacing:1px;
+      box-shadow:4px 4px 0 #000}
+    .tab.active{background:var(--accent);color:#2a1a00}
+    .view{display:none}
+    .view.active{display:block}
+
+    /* ---- Color / builder inputs ---- */
+    .color-row{display:flex;align-items:center;gap:8px}
+    input[type=color]{width:48px;height:38px;padding:2px;border:3px solid #000;background:var(--panel-light);cursor:pointer}
+    .color-row input[type=text]{flex:1;text-transform:uppercase}
+    .asset-row{display:flex;gap:8px;align-items:center}
+    .asset-row input[type=text]{flex:1}
+    .hint{font-size:12px;color:#8a8ab0;margin-top:4px}
+
+    /* ---- Theme Creator layout ---- */
+    .builder{display:grid;grid-template-columns:1fr 300px;gap:16px}
+    @media(max-width:760px){.builder{grid-template-columns:1fr}}
+    .preview-col{position:sticky;top:16px;align-self:start}
+    .preview-label{font-family:var(--font-title);font-size:8px;color:var(--accent);margin-bottom:8px;letter-spacing:1px}
+
+    /* ---- Live mini preview (mirrors the public stage) ---- */
+    .mini{
+      position:relative;width:100%;height:220px;overflow:hidden;
+      border:var(--px) solid #000;box-shadow:inset -4px -4px 0 rgba(0,0,0,.4),4px 4px 0 #000;
+      image-rendering:pixelated;
+    }
+    .mini .m-sky{position:absolute;inset:0}
+    .mini .m-sky::after{content:"";position:absolute;inset:0;
+      background:repeating-linear-gradient(0deg,rgba(0,0,0,.12) 0 2px,transparent 2px 4px)}
+    .mini .m-bg{position:absolute;inset:0;background-size:cover;background-position:center bottom;image-rendering:pixelated}
+    .mini .m-landmark{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);
+      max-height:110px;max-width:70%;image-rendering:pixelated}
+    .mini .m-landmark-fallback{position:absolute;left:50%;bottom:52px;transform:translateX(-50%);
+      width:60px;height:80px;border:4px solid #000}
+    .mini .m-ground{position:absolute;bottom:0;left:0;right:0;height:48px;border-top:4px solid #000}
+    .mini .m-lane{position:absolute;bottom:14px;left:0;right:0;height:20px;border-top:3px solid #000;border-bottom:3px solid #000}
+    .mini .m-lane-line{position:absolute;bottom:22px;left:0;right:0;height:3px;
+      background:repeating-linear-gradient(90deg,#fff 0 14px,transparent 14px 28px)}
+    /* mini runner */
+    .mini .m-runner{position:absolute;bottom:44px;left:50%;transform:translateX(-50%);width:26px;height:34px;
+      animation:mrun .3s steps(2) infinite}
+    .mini .m-runner .head{position:absolute;left:8px;top:0;width:10px;height:10px;background:#ffcf8b;border:2px solid #000}
+    .mini .m-runner .body{position:absolute;left:6px;top:11px;width:14px;height:14px;border:2px solid #000}
+    .mini .m-runner .leg{position:absolute;left:8px;top:26px;width:5px;height:8px;background:#2b3a55;
+      box-shadow:7px 0 0 #2b3a55}
+    @keyframes mrun{0%{transform:translateX(-50%) translateY(0)}100%{transform:translateX(-50%) translateY(-3px)}}
+
+    /* atmosphere effects in preview */
+    .mini.atm-sunset .m-sky{filter:saturate(1.3) hue-rotate(-12deg)}
+    .mini.atm-night-neon .m-sky{filter:brightness(.6) saturate(1.6)}
+    .mini.atm-night-neon .m-landmark-fallback{box-shadow:0 0 16px 4px currentColor}
+    .mini .fx{position:absolute;inset:0;pointer-events:none}
+    .mini.atm-rain .fx{background:repeating-linear-gradient(115deg,rgba(180,200,255,.5) 0 2px,transparent 2px 9px);
+      animation:rain .4s linear infinite}
+    @keyframes rain{from{background-position:0 0}to{background-position:-40px 80px}}
+    .mini.atm-confetti .fx{background-image:
+      radial-gradient(circle,#ff4d6d 2px,transparent 3px),
+      radial-gradient(circle,#38f56b 2px,transparent 3px),
+      radial-gradient(circle,#4cc9f0 2px,transparent 3px),
+      radial-gradient(circle,#ffd23f 2px,transparent 3px);
+      background-size:40px 40px,54px 54px,64px 64px,48px 48px;
+      background-position:0 0,20px 10px,10px 25px,30px 15px;animation:confetti .6s linear infinite}
+    @keyframes confetti{from{background-position:0 0,20px 10px,10px 25px,30px 15px}
+      to{background-position:0 40px,20px 50px,10px 65px,30px 55px}}
+
+    /* Theme list cards */
+    .theme-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(180px,1fr));gap:12px}
+    .theme-card{border:3px solid #000;background:var(--panel-light);box-shadow:4px 4px 0 #000;overflow:hidden}
+    .theme-card .tc-preview{height:70px;position:relative}
+    .theme-card .tc-body{padding:8px}
+    .theme-card .tc-name{font-size:14px;color:#fff;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+    .theme-card .tc-meta{font-size:11px;color:#9a9ac0;margin-top:3px}
+    .theme-card .tc-ops{display:flex;gap:6px;margin-top:8px}
+    .kind-tag{font-family:var(--font-title);font-size:6px;padding:3px 5px;border:2px solid #000;margin-left:6px}
+    .kind-tag.builtin{background:var(--info);color:#04202a}
+    .kind-tag.custom{background:var(--accent);color:#2a1a00}
+
+    /* ---- Login gate ---- */
+    .login-gate{position:fixed;inset:0;z-index:300;display:none;align-items:center;justify-content:center;
+      padding:16px;background:
+        repeating-linear-gradient(0deg, rgba(0,0,0,0.2) 0 2px, transparent 2px 4px),
+        linear-gradient(160deg,#1a1a3a,#3a1a4a 60%,#5a2340)}
+    .login-gate.show{display:flex}
+    .login-box{background:var(--panel);border:var(--px) solid #000;padding:24px;width:min(92vw,360px);
+      box-shadow:8px 8px 0 #000;text-align:center}
+    .login-box h2{font-family:var(--font-title);font-size:16px;color:var(--accent);
+      text-shadow:2px 2px 0 #000,4px 4px 0 var(--accent-2);margin-bottom:6px}
+    .login-box .lp-sub{font-size:13px;color:#9a9ac0;margin-bottom:18px}
+    .login-box label{text-align:left}
+    .login-box input{margin-bottom:6px}
+    .login-err{color:var(--accent-2);font-size:13px;min-height:16px;margin:8px 0}
+    .login-box .pixel-btn{width:100%;margin-top:8px}
+    .app-hidden{display:none !important}
+
+    /* ---- PB checkbox ---- */
+    .check-row{display:flex;align-items:center;gap:10px;margin-top:14px;
+      background:var(--panel-light);border:3px solid #000;padding:10px}
+    .check-row input[type=checkbox]{width:22px;height:22px;flex:0 0 auto;accent-color:var(--accent);cursor:pointer}
+    .check-row label{margin:0;font-size:9px;color:var(--accent)}
+    .check-row .desc{font-size:12px;color:#9a9ac0;margin-left:auto}
+
+    /* ---- asset guideline hint ---- */
+    .guideline{font-size:11px;color:#c9a94c;margin-top:4px;line-height:1.5}
+    .guideline b{color:var(--accent)}
+
+    /* ---- Modals (media library + cropper) ---- */
+    .modal-overlay{position:fixed;inset:0;z-index:200;background:rgba(0,0,0,.72);
+      display:none;align-items:center;justify-content:center;padding:16px}
+    .modal-overlay.show{display:flex}
+    .modal{background:var(--panel);border:var(--px) solid #000;max-width:720px;width:100%;
+      max-height:88vh;overflow:auto;box-shadow:8px 8px 0 #000;padding:16px}
+    .modal-head{display:flex;justify-content:space-between;align-items:center;margin-bottom:14px}
+    .modal-head h3{font-family:var(--font-title);font-size:12px;color:var(--accent)}
+
+    /* media gallery grid */
+    .media-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(120px,1fr));gap:10px}
+    .media-item{border:3px solid #000;background:var(--panel-light);cursor:pointer;overflow:hidden;position:relative}
+    .media-item:hover{border-color:var(--accent)}
+    .media-item .thumb{width:100%;height:80px;object-fit:cover;display:block;image-rendering:pixelated;background:#111}
+    .media-item .mi-meta{font-size:10px;color:#9a9ac0;padding:5px}
+    .media-item .mi-del{position:absolute;top:2px;right:2px;font-family:var(--font-title);font-size:6px;
+      background:var(--accent-2);color:#fff;border:2px solid #000;padding:3px 4px;cursor:pointer}
+    .media-item .mi-ref{position:absolute;top:2px;left:2px;font-family:var(--font-title);font-size:6px;
+      background:var(--good);color:#04210f;border:2px solid #000;padding:3px 4px}
+
+    /* cropper modal */
+    .crop-area{max-height:60vh;background:#111;border:3px solid #000}
+    .crop-area img{max-width:100%;display:block}
+    .crop-ratios{display:flex;gap:8px;margin:12px 0;flex-wrap:wrap}
+
+    /* ---- Character customizer ---- */
+    .swatches{display:flex;gap:6px;margin-top:8px}
+    .sw{width:26px;height:26px;border:3px solid #000;cursor:pointer;padding:0;box-shadow:2px 2px 0 #000}
+    .sw:hover{outline:2px solid var(--accent)}
+    .pixel-btn.ghost.warn{background:var(--accent-2);color:#fff}
+
+    .char-preview{display:flex;gap:14px;justify-content:center;padding:16px;
+      border:var(--px) solid #000;box-shadow:inset -4px -4px 0 rgba(0,0,0,.4),4px 4px 0 #000;
+      background:linear-gradient(180deg,#24243e,#14141f)}
+    .cp-stage{display:flex;flex-direction:column;align-items:center;gap:8px;flex:1}
+    .cp-label{font-family:var(--font-title);font-size:8px;color:var(--accent)}
+    .cp-stage .runner{position:relative;height:80px;display:flex;align-items:flex-end;justify-content:center}
+
+    /* Character preview colors (scoped to admin) */
+    #view-character{--skin:#ffcf8b;--hair:#2b2b3a;--jersey:#4cc9f0;--shorts:#2b3a55;--shoe:#e8e8f0}
+
+    /* Reuse the same proportioned-human sprite the public page uses */
+    .runner-sprite{position:relative;width:40px;height:64px;transform-origin:bottom center;image-rendering:pixelated}
+    .rp{position:absolute;border:2px solid #0c0c18;box-sizing:border-box;image-rendering:pixelated}
+    .rp.head{left:13px;top:6px;width:14px;height:13px;background:var(--skin);border-radius:4px 4px 3px 3px;z-index:3}
+    .rp.hair{left:11px;top:1px;width:18px;height:9px;background:var(--hair);border-bottom:none;border-radius:5px 5px 0 0;z-index:4}
+    .rp.hair::after{content:"";position:absolute;right:-2px;top:5px;width:4px;height:7px;background:var(--hair);border:2px solid #0c0c18;border-left:none;border-radius:0 3px 3px 0}
+    .rp.face{left:22px;top:11px;width:3px;height:4px;background:#0c0c18;border:none;z-index:5}
+    .rp.neck{left:17px;top:17px;width:6px;height:5px;background:var(--skin);border-top:none;z-index:2}
+    .rp.torso{left:12px;top:20px;width:16px;height:19px;background:var(--jersey);border-radius:4px 4px 2px 2px;z-index:2;transform-origin:bottom center;transform:rotate(3deg)}
+    .rp.torso::before{content:"";position:absolute;left:4px;top:-1px;width:8px;height:3px;background:rgba(0,0,0,.18)}
+    .rp.arm{width:6px;height:12px;top:22px;background:var(--jersey);border-radius:3px;transform-origin:top center}
+    .rp.arm .lower{position:absolute;left:0;top:10px;width:6px;height:11px;background:var(--skin);border:2px solid #0c0c18;border-radius:3px;transform-origin:top center}
+    .rp.arm .lower .hand{position:absolute;left:-1px;bottom:-5px;width:6px;height:6px;background:var(--skin);border:2px solid #0c0c18;border-radius:3px}
+    .rp.arm-front{left:25px;z-index:6}
+    .rp.arm-back{left:9px;z-index:1;filter:brightness(.78)}
+    .rp.shorts{left:12px;top:37px;width:16px;height:10px;background:var(--shorts);border-radius:2px 2px 3px 3px;z-index:2}
+    .rp.leg{width:7px;height:13px;top:45px;background:var(--skin);border-radius:3px;transform-origin:top center}
+    .rp.leg .lower{position:absolute;left:0;top:11px;width:7px;height:12px;background:var(--skin);border:2px solid #0c0c18;border-radius:3px;transform-origin:top center}
+    .rp.leg .lower .shoe{position:absolute;left:-2px;bottom:-4px;width:11px;height:5px;background:var(--shoe);border:2px solid #0c0c18;border-radius:2px 4px 4px 2px}
+    .rp.leg .lower .shoe::before{content:"";position:absolute;left:-2px;bottom:-3px;width:11px;height:2px;background:#0c0c18}
+    .rp.leg-front{left:19px;z-index:5}
+    .rp.leg-back{left:14px;z-index:1;filter:brightness(.8)}
+
+    .runner.idle .runner-sprite{animation:idle-bob 2.4s ease-in-out infinite}
+    @keyframes idle-bob{0%,100%{transform:translateY(0)}50%{transform:translateY(-1.5px)}}
+    .runner.idle .rp.arm-front{animation:idle-arm 2.4s ease-in-out infinite}
+    .runner.idle .rp.arm-back{animation:idle-arm 2.4s ease-in-out infinite reverse}
+    @keyframes idle-arm{0%,100%{transform:rotate(6deg)}50%{transform:rotate(-2deg)}}
+    .runner.idle .rp.arm .lower{transform:rotate(-10deg)}
+    .runner.idle .rp.leg{transform:rotate(0deg)}
+    .runner.idle .rp.leg .lower{transform:rotate(4deg)}
+    .runner.run .runner-sprite{animation:run-bounce .25s ease-in-out infinite}
+    @keyframes run-bounce{0%,100%{transform:translateY(0) rotate(-4deg)}50%{transform:translateY(-4px) rotate(-4deg)}}
+    .runner.run .rp.leg-front{animation:thigh-front .5s ease-in-out infinite}
+    .runner.run .rp.leg-back{animation:thigh-back .5s ease-in-out infinite}
+    @keyframes thigh-front{0%{transform:rotate(-34deg)}50%{transform:rotate(30deg)}100%{transform:rotate(-34deg)}}
+    @keyframes thigh-back{0%{transform:rotate(30deg)}50%{transform:rotate(-34deg)}100%{transform:rotate(30deg)}}
+    .runner.run .rp.leg-front .lower{animation:calf-front .5s ease-in-out infinite}
+    .runner.run .rp.leg-back .lower{animation:calf-back .5s ease-in-out infinite}
+    @keyframes calf-front{0%{transform:rotate(8deg)}50%{transform:rotate(52deg)}100%{transform:rotate(8deg)}}
+    @keyframes calf-back{0%{transform:rotate(52deg)}50%{transform:rotate(8deg)}100%{transform:rotate(52deg)}}
+    .runner.run .rp.arm-front{animation:arm-front .5s ease-in-out infinite}
+    .runner.run .rp.arm-back{animation:arm-back .5s ease-in-out infinite}
+    @keyframes arm-front{0%{transform:rotate(30deg)}50%{transform:rotate(-38deg)}100%{transform:rotate(30deg)}}
+    @keyframes arm-back{0%{transform:rotate(-38deg)}50%{transform:rotate(30deg)}100%{transform:rotate(-38deg)}}
+    .runner.run .rp.arm-front .lower{animation:fore-front .5s ease-in-out infinite}
+    .runner.run .rp.arm-back .lower{animation:fore-back .5s ease-in-out infinite}
+    @keyframes fore-front{0%{transform:rotate(-95deg)}50%{transform:rotate(-70deg)}100%{transform:rotate(-95deg)}}
+    @keyframes fore-back{0%{transform:rotate(-70deg)}50%{transform:rotate(-95deg)}100%{transform:rotate(-70deg)}}
+  </style>
+</head>
+<body>
+  <!-- Login gate (shown until authenticated) -->
+  <div class="login-gate" id="login-gate">
+    <form class="login-box" id="login-form" autocomplete="on">
+      <h2>MY RUNNER<br>PROFILE</h2>
+      <p class="lp-sub">CMS ADMIN LOGIN</p>
+      <label for="login-user">Username</label>
+      <input type="text" id="login-user" autocomplete="username" required />
+      <label for="login-pass">Password</label>
+      <input type="password" id="login-pass" autocomplete="current-password" required />
+      <div class="login-err" id="login-err"></div>
+      <button type="submit" class="pixel-btn good" id="login-btn">LOG IN</button>
+    </form>
+  </div>
+
+  <div class="wrap app-hidden" id="app">
+    <div class="topbar">
+      <div>
+        <h1>MY RUNNER PROFILE · CMS</h1>
+        <p class="sub">Manage races and pixel themes. <a href="/">&laquo; View public page</a></p>
+      </div>
+      <div style="display:flex;gap:8px;align-items:center">
+        <span class="sub" id="who" style="margin:0"></span>
+        <button id="logout-btn" class="pixel-btn warn">LOG OUT</button>
+      </div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab active" data-view="races">RACES</button>
+      <button class="tab" data-view="themes">THEME CREATOR</button>
+      <button class="tab" data-view="character">CHARACTER</button>
+      <button class="tab" data-view="profile">RUNNER PROFILE</button>
+    </div>
+
+    <!-- ============ RACES VIEW ============ -->
+    <div class="view active" id="view-races">
+    <div class="topbar" style="margin-bottom:12px">
+      <div></div>
+      <button id="new-btn" class="pixel-btn good">+ NEW RACE</button>
+    </div>
+
+    <!-- Editor form -->
+    <div class="panel" id="form-panel">
+      <h2 id="form-title">ADD RACE</h2>
+      <form id="race-form" autocomplete="off">
+        <input type="hidden" id="f-id" />
+        <label for="f-name">Race Name</label>
+        <input type="text" id="f-name" required placeholder="e.g. JAKARTA MARATHON 2026" />
+
+        <div class="grid">
+          <div>
+            <label for="f-date">Date</label>
+            <input type="date" id="f-date" required />
+          </div>
+          <div>
+            <label for="f-category">Category</label>
+            <select id="f-category"></select>
+          </div>
+          <div>
+            <label for="f-status">Status</label>
+            <select id="f-status"></select>
+          </div>
+          <div>
+            <label for="f-theme">Theme / Landmark</label>
+            <select id="f-theme"></select>
+          </div>
+          <div>
+            <label for="f-finish">Finish Time / PB (optional)</label>
+            <input type="text" id="f-finish" placeholder="e.g. 01:58:42" />
+          </div>
+          <div>
+            <label for="f-order">Order (chronological)</label>
+            <input type="number" id="f-order" min="1" step="1" placeholder="auto" />
+          </div>
+        </div>
+
+        <label for="f-note">Target / Note (optional)</label>
+        <textarea id="f-note" placeholder="e.g. Target Sub-4:30 - COT 5 Jam"></textarea>
+
+        <label for="f-cert">Race Certificate File / URL (optional)</label>
+        <div class="asset-row">
+          <input type="text" id="f-cert" placeholder="/uploads/... or https://..." />
+          <button type="button" class="pixel-btn ghost" id="f-cert-upload-btn">UPLOAD</button>
+          <button type="button" class="pixel-btn ghost" id="f-cert-lib-btn">LIBRARY</button>
+          <button type="button" class="pixel-btn ghost warn" id="f-cert-clear-btn">CLEAR</button>
+          <input type="file" id="f-cert-file" accept="image/png" hidden />
+        </div>
+        <p class="guideline"><b>PNG only.</b> Upload a PNG certificate or paste a PNG link.
+          A "📜 SERTIFIKAT" button appears on the public card for <b>FINISHED</b> races and
+          opens an in-page preview.</p>
+
+        <label for="f-gallery">Gallery Link (optional)</label>
+        <div class="asset-row">
+          <input type="text" id="f-gallery" placeholder="https://photos.google.com/... or https://strava.com/..." />
+          <button type="button" class="pixel-btn ghost warn" id="f-gallery-clear-btn">CLEAR</button>
+        </div>
+        <p class="guideline">External gallery URL (Google Photos, Strava, Flickr, etc.).
+          A "🖼 GALERI" button will appear on the public race card and opens in a new tab.</p>
+
+        <div class="check-row">
+          <input type="checkbox" id="f-pb" />
+          <label for="f-pb">★ Personal Best (PB)</label>
+          <span class="desc">Shows a glowing gold badge on the public card.</span>
+        </div>
+
+        <div class="err" id="form-err"></div>
+        <div class="form-actions">
+          <button type="submit" class="pixel-btn good" id="save-btn">SAVE RACE</button>
+          <button type="button" class="pixel-btn" id="cancel-btn">CANCEL</button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Race list -->
+    <div class="panel">
+      <h2>RACES <span id="count" style="color:#9a9ac0"></span></h2>
+      <div class="race-list" id="race-list"></div>
+      <div class="empty" id="list-empty" style="display:none">No races yet. Add one above.</div>
+    </div>
+    </div><!-- /view-races -->
+
+    <!-- ============ THEME CREATOR VIEW ============ -->
+    <div class="view" id="view-themes">
+      <div class="topbar" style="margin-bottom:12px">
+        <div></div>
+        <button id="new-theme-btn" class="pixel-btn good">+ NEW THEME</button>
+      </div>
+
+      <div class="panel">
+        <h2 id="theme-form-title">CREATE THEME</h2>
+        <div class="builder">
+          <!-- Form -->
+          <form id="theme-form" autocomplete="off">
+            <input type="hidden" id="t-id" />
+            <label for="t-name">Theme Name</label>
+            <input type="text" id="t-name" required placeholder="e.g. Bandung Gedung Sate" />
+
+            <div class="grid">
+              <div>
+                <label for="t-primary">Primary Color</label>
+                <div class="color-row">
+                  <input type="color" id="t-primary-c" value="#4cc9f0" />
+                  <input type="text" id="t-primary" value="#4cc9f0" maxlength="7" />
+                </div>
+              </div>
+              <div>
+                <label for="t-secondary">Secondary Color</label>
+                <div class="color-row">
+                  <input type="color" id="t-secondary-c" value="#ffd23f" />
+                  <input type="text" id="t-secondary" value="#ffd23f" maxlength="7" />
+                </div>
+              </div>
+              <div>
+                <label for="t-skytop">Sky Gradient (Top)</label>
+                <div class="color-row">
+                  <input type="color" id="t-skytop-c" value="#1a1a3a" />
+                  <input type="text" id="t-skytop" value="#1a1a3a" maxlength="7" />
+                </div>
+              </div>
+              <div>
+                <label for="t-skybottom">Sky Gradient (Bottom)</label>
+                <div class="color-row">
+                  <input type="color" id="t-skybottom-c" value="#5a2340" />
+                  <input type="text" id="t-skybottom" value="#5a2340" maxlength="7" />
+                </div>
+              </div>
+              <div>
+                <label for="t-track">Track / Road Style</label>
+                <select id="t-track"></select>
+              </div>
+              <div>
+                <label for="t-atmosphere">Atmosphere / Effect</label>
+                <select id="t-atmosphere"></select>
+              </div>
+            </div>
+
+            <label for="t-bg">Background Image</label>
+            <div class="asset-row">
+              <input type="text" id="t-bg" placeholder="/uploads/... or https://..." />
+              <button type="button" class="pixel-btn ghost" id="t-bg-upload-btn">UPLOAD</button>
+              <button type="button" class="pixel-btn ghost" id="t-bg-lib-btn">LIBRARY</button>
+              <input type="file" id="t-bg-file" accept="image/*" hidden />
+            </div>
+            <p class="guideline"><b>Recommended:</b> 1920×1080px (16:9) pixel sky/landscape.
+              Cropper opens on upload. Leave empty to use the sky gradient.</p>
+
+            <label for="t-landmark">Landmark / Ornament Image</label>
+            <div class="asset-row">
+              <input type="text" id="t-landmark" placeholder="/uploads/... or https://..." />
+              <button type="button" class="pixel-btn ghost" id="t-landmark-upload-btn">UPLOAD</button>
+              <button type="button" class="pixel-btn ghost" id="t-landmark-lib-btn">LIBRARY</button>
+              <input type="file" id="t-landmark-file" accept="image/*" hidden />
+            </div>
+            <p class="guideline"><b>Recommended:</b> transparent PNG, 512×512px (1:1).
+              Leave empty to use a colored placeholder block.</p>
+
+            <div class="err" id="theme-err"></div>
+            <div class="form-actions">
+              <button type="submit" class="pixel-btn good" id="theme-save-btn">SAVE THEME</button>
+              <button type="button" class="pixel-btn" id="theme-cancel-btn">CANCEL</button>
+            </div>
+          </form>
+
+          <!-- Live preview -->
+          <div class="preview-col">
+            <div class="preview-label">LIVE PREVIEW</div>
+            <div class="mini" id="mini-preview">
+              <div class="m-sky"></div>
+              <div class="m-bg"></div>
+              <div class="m-landmark-fallback"></div>
+              <img class="m-landmark" alt="" hidden />
+              <div class="m-ground">
+                <div class="m-lane"></div>
+                <div class="m-lane-line"></div>
+              </div>
+              <div class="m-runner">
+                <div class="head"></div>
+                <div class="body"></div>
+                <div class="leg"></div>
+              </div>
+              <div class="fx"></div>
+            </div>
+            <p class="hint">Runner and track update as you edit.</p>
+          </div>
+        </div>
+      </div>
+
+      <div class="panel">
+        <h2>THEMES <span id="theme-count" style="color:#9a9ac0"></span></h2>
+        <div class="theme-grid" id="theme-grid"></div>
+        <div class="empty" id="theme-empty" style="display:none">No custom themes yet. Create one above.</div>
+      </div>
+    </div><!-- /view-themes -->
+
+    <!-- ============ CHARACTER CUSTOMIZER VIEW ============ -->
+    <div class="view" id="view-character">
+      <div class="panel">
+        <h2>CHARACTER CUSTOMIZER</h2>
+        <div class="builder">
+          <!-- Form -->
+          <form id="char-form" autocomplete="off">
+            <div class="grid">
+              <div>
+                <label for="c-skin">Skin Tone</label>
+                <div class="color-row">
+                  <input type="color" id="c-skin-c" value="#ffcf8b" />
+                  <input type="text" id="c-skin" value="#ffcf8b" maxlength="7" />
+                </div>
+                <div class="swatches" data-target="c-skin">
+                  <button type="button" class="sw" style="background:#ffcf8b" data-c="#ffcf8b"></button>
+                  <button type="button" class="sw" style="background:#f1c27d" data-c="#f1c27d"></button>
+                  <button type="button" class="sw" style="background:#c68642" data-c="#c68642"></button>
+                  <button type="button" class="sw" style="background:#8d5524" data-c="#8d5524"></button>
+                  <button type="button" class="sw" style="background:#5c3a21" data-c="#5c3a21"></button>
+                </div>
+              </div>
+              <div>
+                <label for="c-hair">Hair / Cap Color</label>
+                <div class="color-row">
+                  <input type="color" id="c-hair-c" value="#2b2b3a" />
+                  <input type="text" id="c-hair" value="#2b2b3a" maxlength="7" />
+                </div>
+                <div class="swatches" data-target="c-hair">
+                  <button type="button" class="sw" style="background:#2b2b3a" data-c="#2b2b3a"></button>
+                  <button type="button" class="sw" style="background:#6b4020" data-c="#6b4020"></button>
+                  <button type="button" class="sw" style="background:#c8a24a" data-c="#c8a24a"></button>
+                  <button type="button" class="sw" style="background:#b23a48" data-c="#b23a48"></button>
+                  <button type="button" class="sw" style="background:#eeeeee" data-c="#eeeeee"></button>
+                </div>
+              </div>
+              <div>
+                <label for="c-jersey">Jersey Color</label>
+                <div class="color-row">
+                  <input type="color" id="c-jersey-c" value="#4cc9f0" />
+                  <input type="text" id="c-jersey" value="#4cc9f0" maxlength="7" />
+                </div>
+                <div class="swatches" data-target="c-jersey">
+                  <button type="button" class="sw" style="background:#4cc9f0" data-c="#4cc9f0"></button>
+                  <button type="button" class="sw" style="background:#ff4d6d" data-c="#ff4d6d"></button>
+                  <button type="button" class="sw" style="background:#38f56b" data-c="#38f56b"></button>
+                  <button type="button" class="sw" style="background:#ffd23f" data-c="#ffd23f"></button>
+                  <button type="button" class="sw" style="background:#ffffff" data-c="#ffffff"></button>
+                </div>
+              </div>
+              <div>
+                <label for="c-shorts">Shorts Color</label>
+                <div class="color-row">
+                  <input type="color" id="c-shorts-c" value="#2b3a55" />
+                  <input type="text" id="c-shorts" value="#2b3a55" maxlength="7" />
+                </div>
+                <div class="swatches" data-target="c-shorts">
+                  <button type="button" class="sw" style="background:#2b3a55" data-c="#2b3a55"></button>
+                  <button type="button" class="sw" style="background:#111111" data-c="#111111"></button>
+                  <button type="button" class="sw" style="background:#b23a48" data-c="#b23a48"></button>
+                  <button type="button" class="sw" style="background:#2e8b3d" data-c="#2e8b3d"></button>
+                  <button type="button" class="sw" style="background:#7a1a6a" data-c="#7a1a6a"></button>
+                </div>
+              </div>
+              <div>
+                <label for="c-shoes">Shoes Color</label>
+                <div class="color-row">
+                  <input type="color" id="c-shoes-c" value="#e8e8f0" />
+                  <input type="text" id="c-shoes" value="#e8e8f0" maxlength="7" />
+                </div>
+                <div class="swatches" data-target="c-shoes">
+                  <button type="button" class="sw" style="background:#e8e8f0" data-c="#e8e8f0"></button>
+                  <button type="button" class="sw" style="background:#ff4d6d" data-c="#ff4d6d"></button>
+                  <button type="button" class="sw" style="background:#38f56b" data-c="#38f56b"></button>
+                  <button type="button" class="sw" style="background:#ffd23f" data-c="#ffd23f"></button>
+                  <button type="button" class="sw" style="background:#111111" data-c="#111111"></button>
+                </div>
+              </div>
+            </div>
+
+            <p class="guideline">Pick colors for the runner. The default pixel sprite is
+              always used — customize skin, hair, jersey, shorts, and shoes.</p>
+
+            <div class="err" id="char-err"></div>
+            <div class="form-actions">
+              <button type="submit" class="pixel-btn good" id="char-save-btn">SAVE CHARACTER</button>
+              <button type="button" class="pixel-btn" id="char-reset-btn">RESET DEFAULTS</button>
+            </div>
+          </form>
+
+          <!-- Live preview -->
+          <div class="preview-col">
+            <div class="preview-label">LIVE PREVIEW</div>
+            <div class="char-preview" id="char-preview">
+              <div class="cp-stage">
+                <div class="cp-label">IDLE</div>
+                <div class="runner idle"><div class="runner-sprite" id="cp-idle"></div></div>
+              </div>
+              <div class="cp-stage">
+                <div class="cp-label">RUNNING</div>
+                <div class="runner run"><div class="runner-sprite" id="cp-run"></div></div>
+              </div>
+            </div>
+            <p class="hint">Updates as you pick colors or a sprite sheet.</p>
+          </div>
+        </div>
+      </div>
+    </div><!-- /view-character -->
+
+    <!-- ============ RUNNER PROFILE VIEW ============ -->
+    <div class="view" id="view-profile">
+      <div class="panel">
+        <h2>RUNNER PROFILE</h2>
+        <form id="profile-form" autocomplete="off">
+          <label for="p-name">Runner Name</label>
+          <input type="text" id="p-name" maxlength="60" placeholder="e.g. MUNU KHU" />
+
+          <label for="p-tagline">Tagline</label>
+          <input type="text" id="p-tagline" maxlength="120" placeholder="e.g. Weekend Warrior · Road Runner" />
+
+          <label for="p-bio">Bio / Short Description</label>
+          <textarea id="p-bio" maxlength="500" placeholder="A sentence or two about your running journey."></textarea>
+
+          <h2 style="font-size:10px;margin:18px 0 4px">PERSONAL BESTS</h2>
+          <div class="grid">
+            <div><label for="p-pb-5k">5K</label><input type="text" id="p-pb-5k" maxlength="20" placeholder="e.g. 24:30" /></div>
+            <div><label for="p-pb-10k">10K</label><input type="text" id="p-pb-10k" maxlength="20" placeholder="e.g. 53:14" /></div>
+            <div><label for="p-pb-hm">Half Marathon</label><input type="text" id="p-pb-hm" maxlength="20" placeholder="e.g. 2:05:00" /></div>
+            <div><label for="p-pb-fm">Full Marathon</label><input type="text" id="p-pb-fm" maxlength="20" placeholder="e.g. 4:30:00" /></div>
+          </div>
+
+          <h2 style="font-size:10px;margin:18px 0 4px">LINKS</h2>
+          <label for="p-strava">Strava URL</label>
+          <input type="url" id="p-strava" placeholder="https://www.strava.com/athletes/..." />
+          <label for="p-instagram">Instagram URL</label>
+          <input type="url" id="p-instagram" placeholder="https://instagram.com/..." />
+          <label for="p-website">Website URL</label>
+          <input type="url" id="p-website" placeholder="https://..." />
+
+          <div class="err" id="profile-err"></div>
+          <div class="form-actions">
+            <button type="submit" class="pixel-btn good" id="profile-save-btn">SAVE PROFILE</button>
+          </div>
+          <p class="hint">Only http(s) links are accepted. Empty links are hidden on the homepage.</p>
+        </form>
+      </div>
+    </div><!-- /view-profile -->
+
+  </div>
+
+  <!-- Media Library modal -->
+  <div class="modal-overlay" id="media-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3>MEDIA LIBRARY</h3>
+        <button class="pixel-btn ghost" id="media-close">CLOSE</button>
+      </div>
+      <p class="hint" style="margin-bottom:12px">Click an image to reuse it. Unused images can be deleted.</p>
+      <div class="media-grid" id="media-grid"></div>
+      <div class="empty" id="media-empty" style="display:none">No uploads yet.</div>
+    </div>
+  </div>
+
+  <!-- Cropper modal -->
+  <div class="modal-overlay" id="crop-modal">
+    <div class="modal">
+      <div class="modal-head">
+        <h3 id="crop-title">CROP IMAGE</h3>
+        <button class="pixel-btn ghost" id="crop-cancel">CANCEL</button>
+      </div>
+      <div class="crop-ratios">
+        <button type="button" class="pixel-btn ghost" data-ratio="free">FREE</button>
+        <button type="button" class="pixel-btn ghost" data-ratio="16:9">16:9</button>
+        <button type="button" class="pixel-btn ghost" data-ratio="1:1">1:1</button>
+        <button type="button" class="pixel-btn ghost" data-ratio="4:3">4:3</button>
+      </div>
+      <div class="crop-area"><img id="crop-image" alt="" /></div>
+      <p class="guideline" id="crop-hint"></p>
+      <div class="form-actions">
+        <button type="button" class="pixel-btn good" id="crop-apply">CROP &amp; UPLOAD</button>
+        <button type="button" class="pixel-btn" id="crop-skip">USE ORIGINAL</button>
+      </div>
+    </div>
+  </div>
+
+  <div class="toast" id="toast"></div>
+  <script src="admin.js"></script>
+</body>
+</html>

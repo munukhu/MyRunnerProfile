@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no" />
+  <title>MY RUNNER PROFILE</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+  <link href="https://fonts.googleapis.com/css2?family=Press+Start+2P&family=Silkscreen:wght@400;700&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <!-- Boot / Title screen -->
+  <!-- ===== Profile Homepage (landing view) ===== -->
+  <div id="boot-screen" class="boot-screen">
+    <div class="boot-inner home-inner">
+      <h1 class="boot-title">MY RUNNER PROFILE</h1>
+
+      <div class="home-card pixel-border">
+        <!-- Live customized runner sprite on its track -->
+        <div class="boot-track" id="boot-track">
+          <div class="runner idle" id="boot-runner">
+            <div class="runner-sprite" id="boot-sprite"></div>
+          </div>
+        </div>
+
+        <h2 class="home-name" id="home-name">RUNNER</h2>
+        <p class="home-tagline" id="home-tagline"></p>
+
+        <!-- Personal Best table -->
+        <div class="pb-grid" id="home-pbs">
+          <div class="pb-cell"><span class="pb-k">5K</span><span class="pb-v" data-pb="5k">—</span></div>
+          <div class="pb-cell"><span class="pb-k">10K</span><span class="pb-v" data-pb="10k">—</span></div>
+          <div class="pb-cell"><span class="pb-k">HM</span><span class="pb-v" data-pb="hm">—</span></div>
+          <div class="pb-cell"><span class="pb-k">FM</span><span class="pb-v" data-pb="fm">—</span></div>
+        </div>
+
+        <p class="home-bio" id="home-bio"></p>
+
+        <div class="home-links" id="home-links"></div>
+      </div>
+
+      <button id="start-btn" class="pixel-btn start-btn">ENTER RACE TIMELINE &raquo;</button>
+      <p class="boot-hint">◄ ► NAVIGATE &nbsp;•&nbsp; SWIPE ON MOBILE</p>
+    </div>
+  </div>
+
+  <!-- Loading overlay -->
+  <div id="loading" class="overlay-msg">
+    <div class="blink">LOADING RACES...</div>
+  </div>
+
+  <!-- Empty state overlay -->
+  <div id="empty" class="overlay-msg hidden">
+    <div>NO RACES YET</div>
+    <div style="font-size:9px;line-height:1.6">Add your first race in the CMS.</div>
+    <a class="admin-link" href="/admin">OPEN ADMIN &raquo;</a>
+  </div>
+
+  <!-- Top HUD -->
+  <header class="hud" id="hud">
+    <a class="hud-brand" href="/" aria-label="My Runner Profile home">
+      <span class="hud-logo">🏃</span>
+      <span class="hud-brand-text">MY RUNNER PROFILE</span>
+    </a>
+    <div class="hud-right">
+      <div class="hud-progress">
+        <span class="hud-label">CLEARED</span>
+        <span class="hud-value"><span id="cleared-count">0</span>/<span id="cleared-total">6</span></span>
+      </div>
+      <button id="settings-btn" class="pixel-btn icon-btn" aria-label="Open settings" title="Settings">⚙</button>
+      <a class="pixel-btn icon-btn admin-lock" href="/admin" aria-label="Open admin CMS" title="Admin login">🔒</a>
+    </div>
+  </header>
+
+  <!-- Settings modal -->
+  <div id="settings-modal" class="settings-overlay">
+    <div class="settings-panel pixel-border">
+      <div class="settings-head">
+        <h2>SETTINGS</h2>
+        <button id="settings-close" class="pixel-btn" aria-label="Close settings">X</button>
+      </div>
+
+      <div class="setting-row">
+        <span class="setting-label">SFX</span>
+        <button id="set-sfx" class="pixel-btn toggle-btn" data-on="false">OFF</button>
+      </div>
+      <p class="setting-desc">8-bit sound effects on click and navigation.</p>
+
+      <div class="setting-row">
+        <span class="setting-label">MUSIC</span>
+        <button id="set-music" class="pixel-btn toggle-btn" data-on="false">OFF</button>
+      </div>
+      <p class="setting-desc">Chiptune background music (BGM).</p>
+
+      <div class="setting-row">
+        <span class="setting-label">RACE INFO</span>
+        <div class="seg" id="set-position" role="group" aria-label="Race info position">
+          <button class="pixel-btn seg-btn" data-pos="top">TOP</button>
+          <button class="pixel-btn seg-btn active" data-pos="middle">MID</button>
+          <button class="pixel-btn seg-btn" data-pos="bottom">BOTTOM</button>
+        </div>
+      </div>
+      <p class="setting-desc">Position of the race info card on screen.</p>
+    </div>
+  </div>
+
+  <!-- Main horizontally-scrolling world -->
+  <main class="world" id="world">
+    <div class="track" id="track">
+      <!-- Stages injected by JS -->
+    </div>
+
+    <!-- The runner lives on the fixed foreground layer.
+         Body parts are separate elements so limbs can animate naturally.
+         Colors come from CSS vars set from /api/character. -->
+    <div class="runner-layer">
+      <div class="runner" id="runner">
+        <div class="runner-sprite" id="runner-sprite">
+          <span class="rp arm arm-back"><span class="lower"><span class="hand"></span></span></span>
+          <span class="rp leg leg-back"><span class="lower"><span class="shoe"></span></span></span>
+          <span class="rp hair"></span>
+          <span class="rp head"></span>
+          <span class="rp face"></span>
+          <span class="rp neck"></span>
+          <span class="rp torso"></span>
+          <span class="rp shorts"></span>
+          <span class="rp leg leg-front"><span class="lower"><span class="shoe"></span></span></span>
+          <span class="rp arm arm-front"><span class="lower"><span class="hand"></span></span></span>
+        </div>
+        <div class="runner-shadow"></div>
+        <div class="dust" id="dust"></div>
+      </div>
+    </div>
+  </main>
+
+  <!-- Bottom navigation arcade controls -->
+  <footer class="controls">
+    <button id="prev-btn" class="pixel-btn arrow-btn" aria-label="Previous race">
+      <span class="arrow">&#9664;</span><span class="arrow-label">LEFT</span>
+    </button>
+    <div class="controls-info" id="controls-info">
+      <nav class="stage-dots" id="stage-dots" aria-label="Race timeline"></nav>
+      <span id="race-status" class="status-badge hidden">—</span>
+    </div>
+    <button id="next-btn" class="pixel-btn arrow-btn" aria-label="Next race">
+      <span class="arrow-label">RIGHT</span><span class="arrow">&#9654;</span>
+    </button>
+  </footer>
+
+  <!-- Race certificate preview modal (PNG, in-page) -->
+  <div id="cert-modal" class="cert-overlay" aria-hidden="true">
+    <div class="cert-modal pixel-border">
+      <div class="cert-head">
+        <span class="cert-title">RACE CERTIFICATE</span>
+        <button id="cert-close" class="pixel-btn" aria-label="Close certificate">X</button>
+      </div>
+      <div class="cert-body">
+        <img id="cert-img" alt="Race certificate" />
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>

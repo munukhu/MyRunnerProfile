@@ -1,0 +1,12 @@
+node_modules/
+data/*.tmp
+data/*.json.*.tmp
+*.log
+.DS_Store
+
+# Secrets — never commit the real .env (keep .env.example)
+.env
+
+# Uploaded theme assets (keep the folder, ignore the files)
+public/uploads/*
+!public/uploads/.gitkeep
