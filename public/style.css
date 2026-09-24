@@ -480,21 +480,21 @@ img,
 .sky-obj.dir-static  { animation-name: sky-fade;    animation-timing-function: ease-in-out; }
 
 @keyframes sky-cross-rtl {   /* enters right, exits left */
-  from { transform: translateX(102vw) scale(var(--scale)); }
-  to   { transform: translateX(-140px) scale(var(--scale)); }
+  from { transform: translateX(105vw) scale(var(--scale)); }
+  to   { transform: translateX(-220px) scale(var(--scale)); }
 }
 @keyframes sky-cross-ltr {   /* enters left, exits right (mirrored art) */
-  from { transform: translateX(-140px) scaleX(-1) scale(var(--scale)); }
-  to   { transform: translateX(102vw)  scaleX(-1) scale(var(--scale)); }
+  from { transform: translateX(-220px) scaleX(-1) scale(var(--scale)); }
+  to   { transform: translateX(105vw)  scaleX(-1) scale(var(--scale)); }
 }
 @keyframes sky-meteor {      /* falls diagonally down-left, fading out */
-  from { transform: translate(80vw, -30px) rotate(35deg) scale(var(--scale)); opacity: 0; }
+  from { transform: translate(85vw, -40px) rotate(35deg) scale(var(--scale)); opacity: 0; }
   12%  { opacity: 1; }
-  to   { transform: translate(20vw, 60vh)  rotate(35deg) scale(var(--scale)); opacity: 0; }
+  to   { transform: translate(15vw, 65vh)  rotate(35deg) scale(var(--scale)); opacity: 0; }
 }
 @keyframes sky-twinkle {
-  0%,100% { opacity: 0.15; transform: scale(0.7); }
-  50%     { opacity: 1;    transform: scale(1.1); }
+  0%,100% { opacity: 0.15; transform: scale(calc(var(--scale) * 0.7)); }
+  50%     { opacity: 1;    transform: scale(calc(var(--scale) * 1.2)); }
 }
 @keyframes sky-fade {        /* sun/moon gentle appear + linger + fade */
   0%   { opacity: 0; }
@@ -509,9 +509,9 @@ img,
   position: absolute; top: 3px; width: 7px; height: 3px;
   background: #2b2b3a; transform-origin: right center;
 }
-.so-bird .w1 { left: 0;  animation: bird-flap 0.4s ease-in-out infinite; }
+.so-bird .w1 { left: 0;  animation: bird-flap 0.38s ease-in-out infinite; }
 .so-bird .w2 { left: 7px; transform: scaleX(-1); transform-origin: left center;
-               animation: bird-flap 0.4s ease-in-out infinite; }
+               animation: bird-flap 0.38s ease-in-out infinite; }
 @keyframes bird-flap {
   0%,100% { transform: rotate(-22deg); }
   50%     { transform: rotate(18deg); }
@@ -522,37 +522,140 @@ img,
   50%     { transform: scaleX(-1) rotate(18deg); }
 }
 
-/* ---- PLANE: fuselage + wing + tail, with a tiny contrail ---- */
-.so-plane { width: 30px; height: 12px; }
+/* ---- FLOCK OF BIRDS: 3 birds flying in V-formation ---- */
+.so-flock { width: 34px; height: 18px; }
+.so-flock .fb { position: absolute; width: 11px; height: 6px; }
+.so-flock .fb.fb1 { left: 0; top: 6px; }
+.so-flock .fb.fb2 { left: 11px; top: 0; }
+.so-flock .fb.fb3 { left: 14px; top: 12px; }
+.so-flock .fb .w1, .so-flock .fb .w2 {
+  position: absolute; top: 2px; width: 5px; height: 2px;
+  background: #222230; transform-origin: right center;
+}
+.so-flock .fb .w1 { left: 0; animation: bird-flap 0.38s ease-in-out infinite; }
+.so-flock .fb .w2 { left: 5px; transform: scaleX(-1); transform-origin: left center;
+                    animation: bird-flap-r 0.38s ease-in-out infinite; }
+.so-flock .fb.fb2 .w1, .so-flock .fb.fb2 .w2 { animation-delay: 0.12s; }
+.so-flock .fb.fb3 .w1, .so-flock .fb.fb3 .w2 { animation-delay: 0.24s; }
+
+/* ---- PLANE: airliner fuselage + wing + tail, with contrail ---- */
+.so-plane { width: 32px; height: 12px; }
 .so-plane .body {
-  position: absolute; top: 4px; left: 0; width: 26px; height: 5px;
-  background: #dfe6ef; border: 1px solid #0c0c18; border-radius: 3px;
+  position: absolute; top: 4px; left: 0; width: 28px; height: 5px;
+  background: #e4ecf7; border: 1px solid #0c0c18; border-radius: 3px;
 }
 .so-plane .wing {
-  position: absolute; top: 6px; left: 12px; width: 9px; height: 8px;
-  background: #b9c3d1; border: 1px solid #0c0c18; transform: skewX(-24deg);
+  position: absolute; top: 6px; left: 13px; width: 10px; height: 8px;
+  background: #b4c2d4; border: 1px solid #0c0c18; transform: skewX(-24deg);
 }
 .so-plane .tail {
   position: absolute; top: 0; left: 2px; width: 6px; height: 6px;
-  background: #b9c3d1; border: 1px solid #0c0c18; transform: skewX(-24deg);
+  background: #b4c2d4; border: 1px solid #0c0c18; transform: skewX(-24deg);
 }
 .so-plane::before {   /* contrail */
-  content: ""; position: absolute; top: 6px; left: 26px;
-  width: 24px; height: 2px;
-  background: linear-gradient(90deg, rgba(255,255,255,0.75), rgba(255,255,255,0));
+  content: ""; position: absolute; top: 6px; left: 28px;
+  width: 26px; height: 2px;
+  background: linear-gradient(90deg, rgba(255,255,255,0.85), transparent);
 }
 
-/* ---- HOT-AIR BALLOON: envelope + basket ---- */
+/* ---- RETRO BIPLANE: dual-wing propeller plane ---- */
+.so-biplane { width: 28px; height: 14px; }
+.so-biplane .body {
+  position: absolute; top: 4px; left: 4px; width: 20px; height: 6px;
+  background: #d63031; border: 1px solid #0c0c18; border-radius: 2px;
+}
+.so-biplane .wing-t {
+  position: absolute; top: 1px; left: 8px; width: 15px; height: 3px;
+  background: #fdcb6e; border: 1px solid #0c0c18; border-radius: 1px;
+}
+.so-biplane .wing-b {
+  position: absolute; top: 9px; left: 8px; width: 14px; height: 3px;
+  background: #fdcb6e; border: 1px solid #0c0c18; border-radius: 1px;
+}
+.so-biplane .tail {
+  position: absolute; top: 2px; left: 3px; width: 4px; height: 5px;
+  background: #d63031; border: 1px solid #0c0c18;
+}
+.so-biplane .prop {
+  position: absolute; top: 3px; right: 2px; width: 2px; height: 8px;
+  background: #fff; animation: prop-spin 0.08s linear infinite;
+}
+@keyframes prop-spin {
+  0%   { transform: scaleY(1); }
+  50%  { transform: scaleY(-0.3); }
+  100% { transform: scaleY(1); }
+}
+
+/* ---- BLIMP / AIRSHIP: majestic zeppelin ---- */
+.so-blimp { width: 42px; height: 18px; }
+.so-blimp .hull {
+  position: absolute; top: 0; left: 0; width: 42px; height: 14px;
+  background: linear-gradient(180deg, #f5f6fa 0%, #dcdde1 100%);
+  border: 1px solid #0c0c18; border-radius: 50% 50% 45% 45%;
+  box-shadow: inset 0 -3px 0 rgba(0,0,0,0.15);
+}
+.so-blimp .hull::after {
+  content: ""; position: absolute; left: 8px; top: 5px; width: 26px; height: 2px;
+  background: #e84118;
+}
+.so-blimp .cabin {
+  position: absolute; bottom: 0; left: 14px; width: 14px; height: 4px;
+  background: #2f3640; border: 1px solid #0c0c18; border-radius: 0 0 2px 2px;
+}
+.so-blimp .fin-t {
+  position: absolute; top: -1px; left: 2px; width: 5px; height: 4px;
+  background: #e84118; border: 1px solid #0c0c18;
+}
+.so-blimp .fin-b {
+  position: absolute; top: 11px; left: 2px; width: 5px; height: 4px;
+  background: #e84118; border: 1px solid #0c0c18;
+}
+.so-blimp .beacon {
+  position: absolute; top: 6px; right: 2px; width: 3px; height: 3px;
+  background: #4cd137; border-radius: 50%;
+  animation: beacon-blink 1s ease-in-out infinite;
+}
+@keyframes beacon-blink {
+  0%,100% { opacity: 0.2; }
+  50%     { opacity: 1; box-shadow: 0 0 4px #4cd137; }
+}
+
+/* ---- SUPERSONIC JET: stealth night fighter with glowing afterburner ---- */
+.so-jet { width: 32px; height: 10px; }
+.so-jet .body {
+  position: absolute; top: 3px; left: 2px; width: 26px; height: 4px;
+  background: #2f3640; border: 1px solid #0c0c18; border-radius: 3px 1px 1px 3px;
+}
+.so-jet .wing {
+  position: absolute; top: 5px; left: 10px; width: 10px; height: 6px;
+  background: #192a56; border: 1px solid #0c0c18; transform: skewX(-32deg);
+}
+.so-jet .tail {
+  position: absolute; top: 0; left: 4px; width: 5px; height: 4px;
+  background: #192a56; border: 1px solid #0c0c18; transform: skewX(-32deg);
+}
+.so-jet .afterburner {
+  position: absolute; top: 4px; left: 28px; width: 8px; height: 2px;
+  background: linear-gradient(90deg, #ff9f43, #ff5252, transparent);
+  box-shadow: 0 0 6px #ff793f;
+  animation: jet-flame 0.15s ease-in-out infinite alternate;
+}
+@keyframes jet-flame {
+  from { width: 6px; opacity: 0.8; }
+  to   { width: 12px; opacity: 1; }
+}
+
+/* ---- HOT-AIR BALLOON: colorful envelope + basket ---- */
 .so-balloon { width: 20px; height: 30px; }
 .so-balloon .envelope {
   position: absolute; top: 0; left: 0; width: 20px; height: 22px;
-  background: var(--accent, #ff4d6d);
+  background: var(--balloon-env, var(--accent, #ff4d6d));
   border: 2px solid #0c0c18; border-radius: 50% 50% 45% 45%;
   box-shadow: inset -4px 0 0 rgba(0,0,0,0.18);
 }
 .so-balloon .envelope::after {   /* vertical stripe */
   content: ""; position: absolute; left: 8px; top: 0; width: 4px; height: 100%;
-  background: rgba(255,255,255,0.35);
+  background: var(--balloon-stripe, rgba(255,255,255,0.35));
 }
 .so-balloon .basket {
   position: absolute; bottom: 0; left: 7px; width: 6px; height: 5px;
@@ -563,58 +666,80 @@ img,
   border-left: 2px solid #0c0c18; border-right: 2px solid #0c0c18;
 }
 
-/* ---- SUN: glowing disc with a soft ray ring ---- */
-.so-sun { width: 30px; height: 30px; }
+/* ---- SUN: glowing disc with pulsing corona and rotating rays ---- */
+.so-sun {
+  width: 34px; height: 34px;
+  transform: scale(var(--scale, 1));
+}
 .so-sun::before {
   content: ""; position: absolute; inset: 0;
   background: #ffdf5e; border-radius: 50%;
-  box-shadow: 0 0 18px 8px rgba(255,215,90,0.55);
+  animation: sun-pulse 2.8s ease-in-out infinite alternate;
 }
 .so-sun .ray {
-  position: absolute; inset: -6px; border-radius: 50%;
-  border: 2px dashed rgba(255,223,94,0.5);
+  position: absolute; inset: -7px; border-radius: 50%;
+  border: 2px dashed rgba(255,223,94,0.6);
+  animation: sun-ray-rotate 20s linear infinite;
+}
+@keyframes sun-pulse {
+  0%   { box-shadow: 0 0 16px 6px rgba(255,215,90,0.5); }
+  100% { box-shadow: 0 0 32px 14px rgba(255,190,50,0.85); }
+}
+@keyframes sun-ray-rotate {
+  from { transform: rotate(0deg); }
+  to   { transform: rotate(360deg); }
 }
 
-/* ---- MOON: crescent-ish disc with craters ---- */
-.so-moon { width: 26px; height: 26px; }
+/* ---- MOON: glowing lunar disc with soft celestial halo & craters ---- */
+.so-moon {
+  width: 28px; height: 28px;
+  transform: scale(var(--scale, 1));
+}
 .so-moon::before {
   content: ""; position: absolute; inset: 0;
-  background: #eaeaf2; border-radius: 50%;
-  box-shadow: 0 0 14px 5px rgba(220,225,255,0.4), inset -6px 0 0 rgba(0,0,0,0.14);
+  background: #edf0f8; border-radius: 50%;
+  box-shadow: inset -6px 0 0 rgba(0,0,0,0.15);
+  animation: moon-pulse 3.5s ease-in-out infinite alternate;
 }
 .so-moon .crater {
   position: absolute; background: rgba(0,0,0,0.12); border-radius: 50%;
 }
 .so-moon .c-a { width: 6px; height: 6px; top: 6px;  left: 7px; }
 .so-moon .c-b { width: 4px; height: 4px; top: 14px; left: 14px; }
+@keyframes moon-pulse {
+  0%   { box-shadow: 0 0 14px 4px rgba(190, 215, 255, 0.4), inset -6px 0 0 rgba(0,0,0,0.15); }
+  100% { box-shadow: 0 0 26px 10px rgba(220, 235, 255, 0.75), inset -6px 0 0 rgba(0,0,0,0.15); }
+}
 
-/* ---- METEOR / SHOOTING STAR: bright head + fading trail ---- */
-.so-meteor { width: 40px; height: 6px; }
+/* ---- METEOR / SHOOTING STAR: bright core with radiant fading trail ---- */
+.so-meteor { width: 48px; height: 8px; }
 .so-meteor .rock {
-  position: absolute; right: 0; top: 0; width: 6px; height: 6px;
-  background: #fff; border-radius: 50%;
-  box-shadow: 0 0 8px 3px rgba(180,220,255,0.9);
+  position: absolute; right: 0; top: 1px; width: 7px; height: 7px;
+  background: #ffffff; border-radius: 50%;
+  box-shadow: 0 0 10px 4px rgba(200, 235, 255, 0.95), 0 0 18px 6px rgba(100, 190, 255, 0.6);
 }
 .so-meteor .trail {
-  position: absolute; right: 4px; top: 2px; width: 40px; height: 2px;
-  background: linear-gradient(90deg, rgba(150,200,255,0), #cfe6ff);
+  position: absolute; right: 5px; top: 3px; width: 46px; height: 3px;
+  background: linear-gradient(90deg, transparent 0%, rgba(130, 200, 255, 0.4) 40%, #ffffff 100%);
   border-radius: 2px;
+  box-shadow: 0 0 8px rgba(130, 210, 255, 0.6);
 }
 
-/* ---- STAR: tiny twinkling pixel ---- */
+/* ---- STAR: twinkling pixel ---- */
 .so-star {
   width: 4px; height: 4px; background: #fff;
-  box-shadow: 0 0 6px 2px rgba(255,255,255,0.8);
+  box-shadow: 0 0 6px 2px rgba(255,255,255,0.85);
 }
 
-/* ---- UFO: dome + hull (playful night object) ---- */
-.so-ufo { width: 24px; height: 12px; }
+/* ---- UFO: dome + hull with glowing beam (playful night object) ---- */
+.so-ufo { width: 26px; height: 13px; }
 .so-ufo .hull {
-  position: absolute; bottom: 0; left: 0; width: 24px; height: 7px;
+  position: absolute; bottom: 0; left: 0; width: 26px; height: 7px;
   background: #7de0c4; border: 2px solid #0c0c18; border-radius: 50%;
+  box-shadow: 0 0 8px rgba(125, 224, 196, 0.6);
 }
 .so-ufo .dome {
-  position: absolute; top: 0; left: 7px; width: 10px; height: 7px;
+  position: absolute; top: 0; left: 8px; width: 10px; height: 7px;
   background: #cffff2; border: 2px solid #0c0c18; border-radius: 50% 50% 0 0;
 }
 
@@ -628,6 +753,11 @@ img,
   display: flex;
   align-items: flex-end;
   justify-content: center;
+}
+
+/* Hide landmark when toggled off via Settings */
+body.hide-landmark .landmark-wrap {
+  display: none !important;
 }
 
 /* ---------- Ground / running track ---------- */
@@ -1569,13 +1699,13 @@ body.info-bottom .card { top: auto; bottom: 172px; }
 }
 
 /* The SVG fills the wrapper. overflow:visible lets the glow
-   and sparkle dots bleed outside the 68×68 box freely. */
+   bleed outside the 68×68 box freely. */
 .pb-star-svg {
   width: 100%;
   height: 100%;
   overflow: visible;
   /* silhouette-based glow — follows every point of the star */
-  animation: pb-glow 2s ease-in-out infinite;
+  animation: pb-glow 2.4s ease-in-out infinite;
 }
 
 /* ---- star layers ---- */
@@ -1603,18 +1733,6 @@ body.info-bottom .card { top: auto; bottom: 172px; }
   clip-path: inset(0 0 52% 0);   /* show only the upper half */
 }
 
-/* sparkle dots at star tips */
-.pb-sparkle {
-  fill: #fff8c0;
-  opacity: 0;
-  animation: pb-sparkle-blink 2s ease-in-out infinite;
-}
-.pb-sparkle:nth-child(1) { animation-delay: 0s;    r: 3.5; }
-.pb-sparkle:nth-child(2) { animation-delay: 0.4s; }
-.pb-sparkle:nth-child(3) { animation-delay: 0.8s; }
-.pb-sparkle:nth-child(4) { animation-delay: 1.2s; }
-.pb-sparkle:nth-child(5) { animation-delay: 1.6s; }
-
 /* "PB" text centred in the star belly */
 .pb-star-text {
   font-family: var(--font-title, "Press Start 2P", monospace);
@@ -1637,26 +1755,19 @@ body.info-bottom .card { top: auto; bottom: 172px; }
    We inject the <defs> into the SVG in script.js markup above.
    Fallback: the fill on .pb-star-fill also accepts a flat color.        */
 
-/* ---- Silhouette glow pulse on the SVG (drop-shadow follows star shape) ---- */
+/* ---- Pure star silhouette glow pulse (smooth fading between subtle & bright) ---- */
 @keyframes pb-glow {
   0%, 100% {
     filter:
-      drop-shadow(0 0  3px #ffd23f)
-      drop-shadow(0 0  7px rgba(255,180,  0, 0.70))
-      drop-shadow(0 0 13px rgba(255,210, 50, 0.35));
+      drop-shadow(0 0  3px rgba(255, 210, 63, 0.45))
+      drop-shadow(0 0  7px rgba(255, 180,  0, 0.25));
   }
   50% {
     filter:
-      drop-shadow(0 0  6px #fff700)
-      drop-shadow(0 0 14px rgba(255,220,  0, 0.95))
-      drop-shadow(0 0 28px rgba(255,200, 40, 0.55));
+      drop-shadow(0 0  5px #ffd23f)
+      drop-shadow(0 0 12px rgba(255, 210, 40, 0.85))
+      drop-shadow(0 0 22px rgba(255, 180,  0, 0.45));
   }
-}
-
-/* ---- Sparkle blink ---- */
-@keyframes pb-sparkle-blink {
-  0%,100% { opacity: 0;   transform: scale(0.6); }
-  40%,60% { opacity: 0.95; transform: scale(1.3); }
 }
 
 /* Race name is always shown in uppercase */

@@ -124,6 +124,7 @@ const settingsModal = document.getElementById("settings-modal");
 const settingsClose = document.getElementById("settings-close");
 const setSfxBtn     = document.getElementById("set-sfx");
 const setMusicBtn   = document.getElementById("set-music");
+const setLandmarkBtn = document.getElementById("set-landmark");
 const setPosition   = document.getElementById("set-position");
 
 let RACES = [];
@@ -131,6 +132,7 @@ let current = 0;
 let animating = false;
 let soundOn = false;
 let musicOn = false;
+let showLandmark = true;
 let infoPosition = "middle";
 
 /* ============================================================
@@ -183,31 +185,51 @@ function stopStepLoop() { if (stepTimer) { clearInterval(stepTimer); stepTimer =
    match the stage's atmosphere (day vs night vs festive).
    ============================================================ */
 
-/* Per-atmosphere object pools. `weight` biases how often a type shows up.
-   `dir` = travel direction: "ltr"/"rtl" horizontal, "diag" falling meteor.
-   Durations are in seconds (kept slow for a calm parallax feel). */
+/* Per-atmosphere object pools with diverse varieties.
+   `dir` = travel direction: "ltr"/"rtl" horizontal, "diag" falling meteor, "static" sun/moon, "twinkle" star.
+   Durations are base seconds; scaled dynamically by the parallax depth engine. */
 const SKY_OBJECTS = {
-  // shared daytime-ish pool
+  // Daytime pool: birds, flocks, airliner, retro biplane, colorful balloons, blimp, glowing sun
   day: [
-    { type: "bird",    weight: 4, dir: "rtl", min: 9,  max: 14, top: [8, 34] },
-    { type: "bird",    weight: 3, dir: "ltr", min: 9,  max: 14, top: [10, 38] },
+    { type: "bird",    weight: 4, dir: "rtl", min: 10, max: 15, top: [8, 36] },
+    { type: "bird",    weight: 3, dir: "ltr", min: 10, max: 15, top: [10, 38] },
+    { type: "flock",   weight: 3, dir: "rtl", min: 12, max: 17, top: [6, 28] },
+    { type: "flock",   weight: 2, dir: "ltr", min: 12, max: 17, top: [8, 30] },
     { type: "plane",   weight: 2, dir: "ltr", min: 16, max: 22, top: [6, 20] },
-    { type: "balloon", weight: 3, dir: "rtl", min: 22, max: 30, top: [12, 46] },
-    { type: "sun",     weight: 1, dir: "static", top: [6, 12], side: "right" }
+    { type: "biplane", weight: 3, dir: "rtl", min: 14, max: 20, top: [8, 24] },
+    { type: "balloon", weight: 3, dir: "rtl", min: 20, max: 28, top: [10, 44] },
+    { type: "balloon", weight: 2, dir: "ltr", min: 20, max: 28, top: [12, 46] },
+    { type: "blimp",   weight: 2, dir: "ltr", min: 24, max: 32, top: [6, 22] },
+    { type: "sun",     weight: 1, dir: "static", top: [6, 14], side: "right" }
   ],
-  // night pool: moon, stars, occasional shooting star/meteor
+  // Sunset pool: warm silhouettes, birds, flocks, biplane, sunset planes, balloons, blimp, giant glowing sunset sun
+  sunset: [
+    { type: "bird",    weight: 4, dir: "rtl", min: 10, max: 15, top: [8, 36] },
+    { type: "flock",   weight: 3, dir: "rtl", min: 12, max: 17, top: [6, 28] },
+    { type: "balloon", weight: 4, dir: "rtl", min: 20, max: 28, top: [10, 44] },
+    { type: "balloon", weight: 3, dir: "ltr", min: 20, max: 28, top: [12, 46] },
+    { type: "plane",   weight: 2, dir: "ltr", min: 16, max: 22, top: [6, 20] },
+    { type: "biplane", weight: 2, dir: "rtl", min: 14, max: 20, top: [8, 26] },
+    { type: "blimp",   weight: 2, dir: "rtl", min: 24, max: 32, top: [6, 22] },
+    { type: "sun",     weight: 1, dir: "static", top: [8, 16], side: "right" }
+  ],
+  // Night pool: bright meteors, glowing moon, twinkling stars, UFO, supersonic night jet, night blimp
   night: [
-    { type: "meteor",  weight: 4, dir: "diag", min: 1.1, max: 1.8, top: [2, 22] },
-    { type: "star",    weight: 5, dir: "twinkle", min: 2.4, max: 4, top: [4, 40] },
-    { type: "moon",    weight: 1, dir: "static", top: [5, 12], side: "right" },
-    { type: "ufo",     weight: 1, dir: "ltr", min: 12, max: 18, top: [8, 22] }
+    { type: "meteor",  weight: 5, dir: "diag", min: 1.1, max: 1.9, top: [2, 24] },
+    { type: "star",    weight: 6, dir: "twinkle", min: 2.0, max: 3.8, top: [4, 42] },
+    { type: "moon",    weight: 1, dir: "static", top: [5, 14], side: "right" },
+    { type: "ufo",     weight: 2, dir: "ltr", min: 12, max: 18, top: [8, 24] },
+    { type: "jet",     weight: 2, dir: "rtl", min: 8,  max: 13, top: [6, 20] },
+    { type: "blimp",   weight: 1, dir: "ltr", min: 24, max: 32, top: [6, 22] }
   ],
-  // festive/confetti pool: balloons + fireworks-ish stars + birds
+  // Festive/confetti pool: multi-color balloons, twinkling stars, flock, airship, biplane
   festive: [
-    { type: "balloon", weight: 4, dir: "rtl", min: 20, max: 28, top: [8, 44] },
-    { type: "balloon", weight: 3, dir: "ltr", min: 20, max: 28, top: [10, 46] },
-    { type: "star",    weight: 3, dir: "twinkle", min: 2, max: 3.4, top: [4, 34] },
-    { type: "bird",    weight: 2, dir: "rtl", min: 10, max: 14, top: [10, 30] }
+    { type: "balloon", weight: 5, dir: "rtl", min: 18, max: 26, top: [8, 44] },
+    { type: "balloon", weight: 4, dir: "ltr", min: 18, max: 26, top: [10, 46] },
+    { type: "star",    weight: 4, dir: "twinkle", min: 1.8, max: 3.2, top: [4, 36] },
+    { type: "flock",   weight: 3, dir: "rtl", min: 11, max: 16, top: [8, 30] },
+    { type: "biplane", weight: 2, dir: "ltr", min: 14, max: 20, top: [8, 24] },
+    { type: "blimp",   weight: 2, dir: "ltr", min: 22, max: 30, top: [6, 22] }
   ]
 };
 
@@ -215,7 +237,7 @@ const SKY_OBJECTS = {
 function skyPoolFor(atm) {
   if (atm === "night-neon") return SKY_OBJECTS.night;
   if (atm === "confetti")   return SKY_OBJECTS.festive;
-  if (atm === "sunset")     return SKY_OBJECTS.day;   // warm sky, daytime objects
+  if (atm === "sunset")     return SKY_OBJECTS.sunset;
   return SKY_OBJECTS.day;                             // daytime / rain / default
 }
 
@@ -236,7 +258,13 @@ const SKY_REDUCED = window.matchMedia
 function skyObjectInner(type) {
   switch (type) {
     case "bird":    return '<span class="w1"></span><span class="w2"></span>';
+    case "flock":   return '<span class="fb fb1"><span class="w1"></span><span class="w2"></span></span>' +
+                           '<span class="fb fb2"><span class="w1"></span><span class="w2"></span></span>' +
+                           '<span class="fb fb3"><span class="w1"></span><span class="w2"></span></span>';
     case "plane":   return '<span class="body"></span><span class="wing"></span><span class="tail"></span>';
+    case "biplane": return '<span class="prop"></span><span class="body"></span><span class="wing-t"></span><span class="wing-b"></span><span class="tail"></span>';
+    case "blimp":   return '<span class="hull"></span><span class="cabin"></span><span class="fin-t"></span><span class="fin-b"></span><span class="beacon"></span>';
+    case "jet":     return '<span class="body"></span><span class="wing"></span><span class="tail"></span><span class="afterburner"></span>';
     case "balloon": return '<span class="envelope"></span><span class="basket"></span>';
     case "sun":     return '<span class="ray"></span>';
     case "moon":    return '<span class="crater c-a"></span><span class="crater c-b"></span>';
@@ -253,8 +281,8 @@ function spawnSkyObject() {
   if (!stage) return;
   const layer = stage.querySelector(".sky-cosmetics");
   if (!layer) return;
-  // Don't let objects pile up if a tab was backgrounded.
-  if (layer.childElementCount > 6) return;
+  // Increased density cap to 10 objects for a rich and vibrant sky
+  if (layer.childElementCount > 10) return;
 
   const pool = skyPoolFor(stage.dataset.atm || "daytime");
   const spec = pickWeighted(pool);
@@ -263,40 +291,72 @@ function spawnSkyObject() {
   el.className = "sky-obj so-" + spec.type + " dir-" + spec.dir;
   el.innerHTML = skyObjectInner(spec.type);
 
+  // Random Scaling: 1.0x to 2.0x for parallax depth effect
+  const scale = Number(randRange(1.0, 2.0).toFixed(2));
+  const scaleT = (scale - 1.0) / (2.0 - 1.0); // 0.0 (distant) to 1.0 (foreground)
+  el.style.setProperty("--scale", scale);
+
+  // Parallax layer: larger objects appear in front (higher z-index)
+  el.style.zIndex = Math.round(3 + scaleT * 12);
+
+  // Distance haze: distant objects (1.0x) slightly softer, foreground (2.0x) crisp and full
+  if (spec.dir !== "static" && spec.dir !== "twinkle") {
+    el.style.opacity = (0.80 + scaleT * 0.20).toFixed(2);
+  }
+
+  // Balloon colorful palettes variation
+  if (spec.type === "balloon") {
+    const pal = pickWeighted([
+      { env: "#ff4d6d", stripe: "#ffffff", weight: 3 },
+      { env: "#ffd23f", stripe: "#ff4d6d", weight: 3 },
+      { env: "#4cc9f0", stripe: "#ffd23f", weight: 3 },
+      { env: "#a855f7", stripe: "#38f56b", weight: 2 },
+      { env: "#ff7849", stripe: "#ffffff", weight: 3 },
+      { env: "#38f56b", stripe: "#1a1a2e", weight: 2 }
+    ]);
+    el.style.setProperty("--balloon-env", pal.env);
+    el.style.setProperty("--balloon-stripe", pal.stripe);
+  }
+
   const topPct = randRange(spec.top[0], spec.top[1]);
   el.style.top = topPct + "%";
 
   let life;
   if (spec.dir === "static") {
-    // Sun / moon: park it in a top corner, gentle fade in-out, longer life.
+    // Sun / moon: park in top corner, gentle fade in-out, scale 1.0x - 1.6x
+    const sunMoonScale = Number(randRange(1.0, 1.6).toFixed(2));
+    el.style.setProperty("--scale", sunMoonScale);
     el.style[spec.side === "right" ? "right" : "left"] = randRange(6, 16) + "%";
-    life = randRange(12, 18) * 1000;
+    life = randRange(14, 20) * 1000;
     el.style.animationDuration = "6s";
   } else if (spec.dir === "twinkle") {
-    // Stars: fixed position, blink a few times.
-    el.style.left = randRange(6, 92) + "%";
+    // Stars: fixed position, blink a few times, random scale
+    el.style.left = randRange(5, 95) + "%";
     const dur = randRange(spec.min, spec.max);
     el.style.animationDuration = dur + "s";
-    life = dur * 1000 * randRange(1.2, 2.2);
+    life = dur * 1000 * randRange(1.3, 2.5);
   } else {
-    // Moving objects (bird/plane/balloon/meteor/ufo).
-    const dur = randRange(spec.min, spec.max);
+    // Moving objects (birds, planes, biplanes, blimps, meteors, ufo, etc.):
+    // PARALLAX EFFECT:
+    // Scale 1.0x (distant) moves slower (speedMultiplier ~0.78x -> duration ~1.28x)
+    // Scale 2.0x (close) moves faster (speedMultiplier ~1.45x -> duration ~0.69x)
+    const speedMult = 0.78 + scaleT * 0.67; // 0.78 at 1.0x, 1.45 at 2.0x
+    const baseDur = randRange(spec.min, spec.max);
+    const dur = Number((baseDur / speedMult).toFixed(2));
     el.style.animationDuration = dur + "s";
-    el.style.setProperty("--scale", randRange(0.8, 1.25).toFixed(2));
-    life = dur * 1000 + 400;
+    life = dur * 1000 + 500;
   }
 
   layer.appendChild(el);
   // Self-remove after its life, or when the CSS animation ends.
   const kill = () => el.remove();
   el.addEventListener("animationend", kill, { once: true });
-  setTimeout(kill, life + 200);
+  setTimeout(kill, life + 300);
 }
 
-/* Randomised spawn loop: schedules the next spawn 2.5–7s out each time so
-   objects appear gradually rather than all at once. */
+/* Randomised spawn loop: schedules the next spawn 1.4–3.2s out so the sky is lively */
 function scheduleSkyObject() {
-  const delay = randRange(2500, 7000);
+  const delay = randRange(1400, 3200);
   skyTimer = setTimeout(() => {
     if (document.visibilityState === "visible") spawnSkyObject();
     scheduleSkyObject();
@@ -304,9 +364,10 @@ function scheduleSkyObject() {
 }
 function startSkyCosmetics() {
   if (SKY_REDUCED || skyTimer) return;
-  // A couple of quick initial spawns so the sky isn't empty on load.
-  setTimeout(spawnSkyObject, 600);
-  setTimeout(spawnSkyObject, 2200);
+  // A few quick initial staggered spawns so the sky is populated right away
+  setTimeout(spawnSkyObject, 250);
+  setTimeout(spawnSkyObject, 900);
+  setTimeout(spawnSkyObject, 1800);
   scheduleSkyObject();
 }
 function stopSkyCosmetics() {
@@ -360,12 +421,6 @@ function buildStages() {
              <polygon class="pb-star-fill"   points="50,3 62,35 97,35 70,56 80,90 50,69 20,90 30,56 3,35 38,35"/>
              <!-- inner bright highlight (top-half sheen) -->
              <polygon class="pb-star-shine"  points="50,10 60,37 88,37 66,52 74,80 50,63 26,80 34,52 12,37 40,37"/>
-             <!-- tip sparkle dots -->
-             <circle class="pb-sparkle" cx="50" cy="3"  r="3.5"/>
-             <circle class="pb-sparkle" cx="97" cy="35" r="2.5"/>
-             <circle class="pb-sparkle" cx="80" cy="90" r="2.5"/>
-             <circle class="pb-sparkle" cx="20" cy="90" r="2.5"/>
-             <circle class="pb-sparkle" cx="3"  cy="35" r="2.5"/>
              <!-- "PB" label -->
              <text class="pb-star-text" x="50" y="60">PB</text>
            </svg>
@@ -611,17 +666,18 @@ function loadSettings() {
     const s = JSON.parse(localStorage.getItem(SETTINGS_KEY) || "{}");
     soundOn = !!s.sfx;
     musicOn = !!s.music;
+    showLandmark = s.showLandmark !== false;
     // Respect a saved choice; otherwise pick the viewport-appropriate default.
     infoPosition = ["top", "middle", "bottom"].includes(s.position)
       ? s.position : defaultInfoPosition();
   } catch {
-    soundOn = false; musicOn = false; infoPosition = defaultInfoPosition();
+    soundOn = false; musicOn = false; showLandmark = true; infoPosition = defaultInfoPosition();
   }
 }
 function saveSettings() {
   try {
     localStorage.setItem(SETTINGS_KEY, JSON.stringify({
-      sfx: soundOn, music: musicOn, position: infoPosition
+      sfx: soundOn, music: musicOn, showLandmark: showLandmark, position: infoPosition
     }));
   } catch { /* ignore */ }
 }
@@ -636,6 +692,18 @@ function applyInfoPosition(pos) {
   document.body.classList.add("info-" + pos);
   [...setPosition.children].forEach((b) =>
     b.classList.toggle("active", b.dataset.pos === pos));
+}
+
+function applyLandmark(on) {
+  showLandmark = on;
+  if (setLandmarkBtn) applyToggleBtn(setLandmarkBtn, on);
+  document.body.classList.toggle("hide-landmark", !on);
+}
+
+function setLandmark(on) {
+  applyLandmark(on);
+  if (soundOn) sfxClick();
+  saveSettings();
 }
 
 function setSound(on) {
@@ -656,6 +724,7 @@ function setMusic(on) {
 function applySettings() {
   applyToggleBtn(setSfxBtn, soundOn);
   applyToggleBtn(setMusicBtn, musicOn);
+  applyLandmark(showLandmark);
   applyInfoPosition(infoPosition);
 }
 
@@ -706,6 +775,7 @@ settingsClose.addEventListener("click", closeSettings);
 settingsModal.addEventListener("click", (e) => { if (e.target === settingsModal) closeSettings(); });
 setSfxBtn.addEventListener("click", () => setSound(!soundOn));
 setMusicBtn.addEventListener("click", () => setMusic(!musicOn));
+if (setLandmarkBtn) setLandmarkBtn.addEventListener("click", () => setLandmark(!showLandmark));
 setPosition.addEventListener("click", (e) => {
   const b = e.target.closest("button[data-pos]");
   if (!b) return;
